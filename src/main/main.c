@@ -136,27 +136,9 @@ double g_freezer1_precision = 0;                                        /* curre
 DATED to a value and that Property then RETRIEVED, the RETRIEVED value is valid if in the range of the set value +/- precision */
 static char *g_freezer1_RESOURCE_PROPERTY_NAME_range = "range";         /* the name for the attribute */
 
-/* array range  The valid range for the Property in the Resource as a number. The first value in the array is the minimum value, the second value in the array is the maximum value. */
-double g_freezer1_range[2];
-size_t g_freezer1_range_array_size;
-
-static char *g_freezer1_RESOURCE_PROPERTY_NAME_step = "step";               /* the name for the attribute */
-double g_freezer1_step = 0;                                                 /* current value of property "step"  Step value across the defined range an integer when the range is a number.  This is the increment for valid values across the range; so i\
-f range is 0.0..10.0 and step is 2.5 then valid values are 0.0,2.5,5.0,7.5,10.0. */
-static char *g_freezer1_RESOURCE_PROPERTY_NAME_temperature = "temperature"; /* the name for the attribute */
-double g_freezer1_temperature = 0;                                          /* current value of property "temperature"  The current temperature setting or measurement. */
-static char *g_freezer1_RESOURCE_PROPERTY_NAME_units = "units";             /* the name for the attribute */
-char g_freezer1_units[MAX_PAYLOAD_STRING] = ""
-                                            ""; /* current value of property "units" The unit for the conveyed temperature value, Note that when doing an UPDATE, the unit on the device does NOT chan\
-ge, it only indicates the unit of the conveyed value during the UPDATE operation. */
 /* global property variables for path: "/light1" */
 static char *g_light1_RESOURCE_PROPERTY_NAME_value = "value";                                  /* the name for the attribute */
 bool g_light1_value = false; /* current value of property "value" The status of the switch. */ /* registration data variables for the resources */
-
-/* global resource variables for path: /freezer1 */
-static char *g_freezer1_RESOURCE_ENDPOINT = "/freezer1";                   /* used path for this resource */
-static char *g_freezer1_RESOURCE_TYPE[MAX_STRING] = {"oic.r.temperature"}; /* rt value (as an array) */
-int g_freezer1_nr_resource_types = 1;
 
 /**
 * function to set up the device.
@@ -322,315 +304,6 @@ static void initialise_wifi(void)
   ESP_ERROR_CHECK(esp_wifi_start());
 }
 
-static void
-get_freezer1(oc_request_t *request, oc_interface_mask_t interfaces, void *user_data)
-{
-  (void)user_data; /* variable not used */
-  float tempResult = 0;
-  mf_temp_get_value(&tempResult);
-  g_freezer1_temperature =(double)tempResult;
-  /* TODO: SENSOR add here the code to talk to the HW if one implements a sensor.                                                                                                                          
-     the call to the HW needs to fill in the global variable before it returns to this function here.                                                                                                      
-     alternative is to have a callback from the hardware that sets the global variables.                                                                                                                   
-                                                                                                                                                                                                           
-     The implementation always return everything that belongs to the resource.                                                                                                                             
-     this implementation is not optimal, but is functionally correct and will pass CTT1.2.2 */
-  bool error_state = false;
-
-  /* query name 'units' type: 'string', enum: ['C', 'F', 'K']*/
-  char *_units = NULL; /* not null terminated Units */
-  int _units_len = oc_get_query_value(request, "units", &_units);
-  if (_units_len != -1)
-  {
-    PRINT(" query value 'units': %.*s\n", _units_len, _units);
-    bool query_ok = false;
-    /* input check ['C', 'F', 'K']  */
-
-    if (strncmp(_units, "C", _units_len) == 0)
-      query_ok = true;
-    if (strncmp(_units, "F", _units_len) == 0)
-      query_ok = true;
-    if (strncmp(_units, "K", _units_len) == 0)
-      query_ok = true;
-    if (query_ok == false)
-      error_state = true;
-    /* TODO: use the query value to tailer the response*/
-  }
-
-  PRINT("-- Begin get_freezer1: interface %d\n", interfaces);
-  oc_rep_start_root_object();
-  switch (interfaces)
-  {
-  case OC_IF_BASELINE:
-    PRINT("   Adding Baseline info\n");
-    oc_process_baseline_interface(request->resource);
-
-    /* property (number) 'precision' */
-    oc_rep_set_double(root, precision, g_freezer1_precision);
-    PRINT("   %s : %f\n", g_freezer1_RESOURCE_PROPERTY_NAME_precision, g_freezer1_precision);
-    /* property (array of numbers) 'range' */
-    oc_rep_set_array(root, range);
-    PRINT("   %s double = [ ", g_freezer1_RESOURCE_PROPERTY_NAME_range);
-    for (int i = 0; i < (int)g_freezer1_range_array_size; i++)
-    {
-      oc_rep_add_double(range, g_freezer1_range[i]);
-      PRINT("   %f ", g_freezer1_range[i]);
-    }
-    PRINT("   ]\n");
-    oc_rep_close_array(root, range);
-    /* property (number) 'step' */
-    oc_rep_set_double(root, step, g_freezer1_step);
-    PRINT("   %s : %f\n", g_freezer1_RESOURCE_PROPERTY_NAME_step, g_freezer1_step);
-    /* property (number) 'temperature' */
-    oc_rep_set_double(root, temperature, g_freezer1_temperature);
-    PRINT("   %s : %f\n", g_freezer1_RESOURCE_PROPERTY_NAME_temperature, g_freezer1_temperature);
-    /* property (string) 'units' */
-    oc_rep_set_text_string(root, units, g_freezer1_units);
-    PRINT("   %s : %s\n", g_freezer1_RESOURCE_PROPERTY_NAME_units, g_freezer1_units);
-    break;
-  case OC_IF_S:
-
-    /* property (number) 'precision' */
-    oc_rep_set_double(root, precision, g_freezer1_precision);
-    PRINT("   %s : %f\n", g_freezer1_RESOURCE_PROPERTY_NAME_precision, g_freezer1_precision);
-    /* property (array of numbers) 'range' */
-    oc_rep_set_array(root, range);
-    PRINT("   %s double = [ ", g_freezer1_RESOURCE_PROPERTY_NAME_range);
-    for (int i = 0; i < (int)g_freezer1_range_array_size; i++)
-    {
-      oc_rep_add_double(range, g_freezer1_range[i]);
-      PRINT("   %f ", g_freezer1_range[i]);
-    }
-    PRINT("   ]\n");
-    oc_rep_close_array(root, range);
-    /* property (number) 'step' */
-    oc_rep_set_double(root, step, g_freezer1_step);
-    PRINT("   %s : %f\n", g_freezer1_RESOURCE_PROPERTY_NAME_step, g_freezer1_step);
-    /* property (number) 'temperature' */
-    oc_rep_set_double(root, temperature, g_freezer1_temperature);
-    PRINT("   %s : %f\n", g_freezer1_RESOURCE_PROPERTY_NAME_temperature, g_freezer1_temperature);
-    /* property (string) 'units' */
-    oc_rep_set_text_string(root, units, g_freezer1_units);
-    PRINT("   %s : %s\n", g_freezer1_RESOURCE_PROPERTY_NAME_units, g_freezer1_units);
-    break;
-  default:
-    break;
-  }
-  oc_rep_end_root_object();
-  if (error_state == false)
-  {
-    oc_send_response(request, OC_STATUS_OK);
-  }
-  else
-  {
-    oc_send_response(request, OC_STATUS_BAD_OPTION);
-  }
-  PRINT("-- End get_freezer1\n");
-}
-
-/**                                                                                                                                                                                                        
-* post method for "/freezer1" resource.                                                                                                                                                                    
-* The function has as input the request body, which are the input values of the POST method.                                                                                                               
-* The input values (as a set) are checked if all supplied values are correct.                                                                                                                              
-* If the input values are correct, they will be assigned to the global  property values.                                                                                                                   
-* Resource Description:                                                                                                                                                                                    
-* Sets the desired temperature value.                                                                                                                                                                      
-* If a "unit" is included and the server may not support the unit indicated the request will fail.                                                                                                         
-* If the units are omitted value is taken to be in C.                                                                                                                                                      
-*                                                                                                                                                                                                          
-* @param request the request representation.                                                                                                                                                               
-* @param interfaces the used interfaces during the request.                                                                                                                                                
-* @param user_data the supplied user data.                                                                                                                                                                 
-*/
-static void
-post_freezer1(oc_request_t *request, oc_interface_mask_t interfaces, void *user_data)
-{
-  (void)interfaces;
-  (void)user_data;
-  bool error_state = false;
-  PRINT("-- Begin post_freezer1:\n");
-  oc_rep_t *rep = request->request_payload;
-
-  /* loop over the request document for each required input field to check if all required input fields are present */
-  bool var_in_request = false;
-  rep = request->request_payload;
-  while (rep != NULL)
-  {
-    if (strcmp(oc_string(rep->name), g_freezer1_RESOURCE_PROPERTY_NAME_temperature) == 0)
-    {
-      var_in_request = true;
-    }
-    rep = rep->next;
-  }
-  if (var_in_request == false)
-  {
-    error_state = true;
-    PRINT(" required property: 'temperature' not in request\n");
-  }
-  /* loop over the request document to check if all inputs are ok */
-  rep = request->request_payload;
-  while (rep != NULL)
-  {
-    PRINT("key: (check) %s \n", oc_string(rep->name));
-
-    error_state = check_on_readonly_common_resource_properties(rep->name, error_state);
-    if (strcmp(oc_string(rep->name), g_freezer1_RESOURCE_PROPERTY_NAME_precision) == 0)
-    {
-      /* property "precision" of type double exist in payload */
-      /* check if "precision" is read only */
-      error_state = true;
-      PRINT("   property 'precision' is readOnly \n");
-      if ((rep->type != OC_REP_DOUBLE) & (rep->type != OC_REP_INT))
-      {
-        error_state = true;
-        PRINT("   property 'precision' is not of type double or int %d \n", rep->type);
-      }
-    }
-    if (strcmp(oc_string(rep->name), g_freezer1_RESOURCE_PROPERTY_NAME_range) == 0)
-    {
-      /* property "range" of type array exist in payload */
-      /* check if "range" is read only */
-      error_state = true;
-      PRINT("   property 'range' is readOnly \n");
-      size_t array_size = 0;
-
-      double *temp_array = 0;
-      oc_rep_get_double_array(rep, "range", &temp_array, &array_size);
-
-      if (array_size > 2)
-      {
-        error_state = true;
-        PRINT("   property array 'range' is too long: %d expected: 2 \n", (int)array_size);
-      }
-    }
-    if (strcmp(oc_string(rep->name), g_freezer1_RESOURCE_PROPERTY_NAME_step) == 0)
-    {
-      /* property "step" of type double exist in payload */
-      /* check if "step" is read only */
-      error_state = true;
-      PRINT("   property 'step' is readOnly \n");
-      if ((rep->type != OC_REP_DOUBLE) & (rep->type != OC_REP_INT))
-      {
-        error_state = true;
-        PRINT("   property 'step' is not of type double or int %d \n", rep->type);
-      }
-    }
-    if (strcmp(oc_string(rep->name), g_freezer1_RESOURCE_PROPERTY_NAME_temperature) == 0)
-    {
-      /* property "temperature" of type double exist in payload */
-      if ((rep->type != OC_REP_DOUBLE) & (rep->type != OC_REP_INT))
-      {
-        error_state = true;
-        PRINT("   property 'temperature' is not of type double or int %d \n", rep->type);
-      }
-    }
-    if (strcmp(oc_string(rep->name), g_freezer1_RESOURCE_PROPERTY_NAME_units) == 0)
-    {
-      /* property "units" of type string exist in payload */
-      if (rep->type != OC_REP_STRING)
-      {
-        error_state = true;
-        PRINT("   property 'units' is not of type string %d \n", rep->type);
-      }
-      if (strlen(oc_string(rep->value.string)) >= (MAX_PAYLOAD_STRING - 1))
-      {
-        error_state = true;
-        PRINT("   property 'units' is too long %d expected: MAX_PAYLOAD_STRING-1 \n", (int)strlen(oc_string(rep->value.string)));
-      }
-    }
-    rep = rep->next;
-  }
-  /* if the input is ok, then process the input document and assign the global variables */
-  if (error_state == false)
-  {
-    switch (interfaces)
-    {
-    default:
-    {
-      /* loop over all the properties in the input document */
-      oc_rep_t *rep = request->request_payload;
-      while (rep != NULL)
-      {
-        PRINT("key: (assign) %s \n", oc_string(rep->name));
-        /* no error: assign the variables */
-
-        if (strcmp(oc_string(rep->name), g_freezer1_RESOURCE_PROPERTY_NAME_precision) == 0)
-        {
-          /* assign "precision" */
-          PRINT("  property 'precision' : %f\n", rep->value.double_p);
-          g_freezer1_precision = rep->value.double_p;
-        }
-        if (strcmp(oc_string(rep->name), g_freezer1_RESOURCE_PROPERTY_NAME_range) == 0)
-        {
-          /* retrieve the array pointer to the double array of property "range"                                                                                                                        
-                 note that the variable g_freezer1_range_array_size will contain the array size in the payload. */
-          double *temp_double = 0;
-          oc_rep_get_double_array(rep, "range", &temp_double, &g_freezer1_range_array_size);
-          /* copy over the data of the retrieved array to the global variable */
-          for (int j = 0; j < (int)g_freezer1_range_array_size; j++)
-          {
-            PRINT(" double %f ", temp_double[j]);
-            g_freezer1_range[j] = temp_double[j];
-          }
-        }
-        if (strcmp(oc_string(rep->name), g_freezer1_RESOURCE_PROPERTY_NAME_step) == 0)
-        {
-          /* assign "step" */
-          PRINT("  property 'step' : %f\n", rep->value.double_p);
-          g_freezer1_step = rep->value.double_p;
-        }
-        if (strcmp(oc_string(rep->name), g_freezer1_RESOURCE_PROPERTY_NAME_temperature) == 0)
-        {
-          /* assign "temperature" */
-          PRINT("  property 'temperature' : %f\n", rep->value.double_p);
-          g_freezer1_temperature = rep->value.double_p;
-        }
-        if (strcmp(oc_string(rep->name), g_freezer1_RESOURCE_PROPERTY_NAME_units) == 0)
-        {
-          /* assign "units" */
-          PRINT("  property 'units' : %s\n", oc_string(rep->value.string));
-          strncpy(g_freezer1_units, oc_string(rep->value.string), MAX_PAYLOAD_STRING - 1);
-        }
-        rep = rep->next;
-      }
-      /* set the response */
-      PRINT("Set response \n");
-      oc_rep_start_root_object();
-      /*oc_process_baseline_interface(request->resource); */
-      PRINT("   %s : %f\n", g_freezer1_RESOURCE_PROPERTY_NAME_precision, g_freezer1_precision);
-      oc_rep_set_double(root, precision, g_freezer1_precision);
-
-      oc_rep_set_array(root, range);
-      for (int i = 0; i < (int)g_freezer1_range_array_size; i++)
-      {
-        oc_rep_add_double(range, g_freezer1_range[i]);
-      }
-      oc_rep_close_array(root, range);
-
-      PRINT("   %s : %f\n", g_freezer1_RESOURCE_PROPERTY_NAME_step, g_freezer1_step);
-      oc_rep_set_double(root, step, g_freezer1_step);
-      PRINT("   %s : %f\n", g_freezer1_RESOURCE_PROPERTY_NAME_temperature, g_freezer1_temperature);
-      oc_rep_set_double(root, temperature, g_freezer1_temperature);
-      PRINT("   %s : %s\n", g_freezer1_RESOURCE_PROPERTY_NAME_units, g_freezer1_units);
-      oc_rep_set_text_string(root, units, g_freezer1_units);
-
-      oc_rep_end_root_object();
-      /* TODO: ACTUATOR add here the code to talk to the HW if one implements an actuator.                                                                                                                 
-       one can use the global variables as input to those calls                                                                                                                                            
-       the global values have been updated already with the data from the request */
-      oc_send_response(request, OC_STATUS_CHANGED);
-    }
-    }
-  }
-  else
-  {
-    PRINT("  Returning Error \n");
-    /* TODO: add error response, if any */
-    //oc_send_response(request, OC_STATUS_NOT_MODIFIED);
-    oc_send_response(request, OC_STATUS_BAD_REQUEST);
-  }
-  PRINT("-- End post_freezer1\n");
-}
 
 /**
 * get method for "/binaryswitch" resource.
@@ -805,37 +478,22 @@ post_binaryswitch(oc_request_t *request, oc_interface_mask_t interfaces, void *u
 void register_resources(void)
 {
   PRINT("Register Resource with local path \"/freezer1\"\n");
-  oc_resource_t *res_freezer1 = oc_new_resource(NULL, g_freezer1_RESOURCE_ENDPOINT, g_freezer1_nr_resource_types, 0);
-  PRINT("     number of Resource Types: %d\n", g_freezer1_nr_resource_types);
-  for (int a = 0; a < g_freezer1_nr_resource_types; a++)
-  {
-    PRINT("     Resource Type: \"%s\"\n", g_freezer1_RESOURCE_TYPE[a]);
-    oc_resource_bind_resource_type(res_freezer1, g_freezer1_RESOURCE_TYPE[a]);
-  }
-
-  oc_resource_bind_resource_interface(res_freezer1, OC_IF_BASELINE); /* oic.if.baseline */
-  oc_resource_bind_resource_interface(res_freezer1, OC_IF_A);        /* oic.if.a */
-  oc_resource_bind_resource_interface(res_freezer1, OC_IF_S);        /* oic.if.s */
-  oc_resource_set_default_interface(res_freezer1, OC_IF_BASELINE);
-  PRINT("     Default OCF Interface: 'oic.if.baseline'\n");
-  oc_resource_set_discoverable(res_freezer1, true);
+  oc_resource_t *res_temperature = oc_new_resource("tempsetter", "/temp", 1, 0);
+  mf_temp_create_resource(res_temperature);
+  oc_resource_set_discoverable(res_temperature, true);
   /* periodic observable                                                                                                                                                                                   
      to be used when one wants to send an event per time slice                                                                                                                                             
      period is 1 second */
-  oc_resource_set_periodic_observable(res_freezer1, 1);
+  oc_resource_set_periodic_observable(res_temperature, 1);
   /* set observable                                                                                                                                                                                        
      events are send when oc_notify_observers(oc_resource_t *resource) is called.                                                                                                                          
     this function must be called when the value changes, preferable on an interrupt when something is read from the hardware. */
-  /*oc_resource_set_observable(res_freezer1, true); */
-
-  oc_resource_set_request_handler(res_freezer1, OC_GET, get_freezer1, NULL);
-
-  oc_resource_set_request_handler(res_freezer1, OC_POST, post_freezer1, NULL);
+  /*oc_resource_set_observable(res_temperature, true); */
 #ifdef OC_CLOUD
-  oc_cloud_add_resource(res_freezer1);
+  oc_cloud_add_resource(res_temperature);
 #endif
 
-  oc_add_resource(res_freezer1);
+  oc_add_resource(res_temperature);
 
   PRINT("Register Resource with local path \"/binaryswitch\"\n");
   oc_resource_t *res_binaryswitch = oc_new_resource(NULL, g_binaryswitch_RESOURCE_ENDPOINT, g_binaryswitch_nr_resource_types, 0);
@@ -870,22 +528,6 @@ void register_resources(void)
   oc_add_resource(res_binaryswitch);
 }
 
-#if defined(OC_SECURITY) && defined(OC_PKI)
-static int set_root_certificate(void)
-{
-  const char *root_ca = "-----BEGIN CERTIFICATE-----\n"
-                        "MIIBaTCCAQ+gAwIBAgIQR33gIB75I7Vi/QnMnmiWvzAKBggqhkjOPQQDAjATMREw\n"
-                        "DwYDVQQKEwhUZXN0IE9SRzAeFw0xOTA1MDIyMDA1MTVaFw0yOTAzMTAyMDA1MTVa\n"
-                        "MBMxETAPBgNVBAoTCFRlc3QgT1JHMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE\n"
-                        "xbwMaS8jcuibSYJkCmuVHfeV3xfYVyUq8Iroz7YlXaTayspW3K4hVdwIsy/5U+3U\n"
-                        "vM/vdK5wn2+NrWy45vFAJqNFMEMwDgYDVR0PAQH/BAQDAgEGMBMGA1UdJQQMMAoG\n"
-                        "CCsGAQUFBwMBMA8GA1UdEwEB/wQFMAMBAf8wCwYDVR0RBAQwAoIAMAoGCCqGSM49\n"
-                        "BAMCA0gAMEUCIBWkxuHKgLSp6OXDJoztPP7/P5VBZiwLbfjTCVRxBvwWAiEAnzNu\n"
-                        "6gKPwtKmY0pBxwCo3NNmzNpA6KrEOXE56PkiQYQ=\n"
-                        "-----END CERTIFICATE-----\n";
-  return oc_pki_add_mfg_trust_anchor(0, (const unsigned char *)root_ca, strlen(root_ca));
-}
-#endif /* OC_SECURITY && OC_PKI */
 
 void factory_presets_cb(size_t device, void *data)
 {
@@ -896,58 +538,50 @@ void factory_presets_cb(size_t device, void *data)
 
 #if defined(OC_SECURITY) && defined(OC_PKI)
 
-  // from https://github.com/plgd-dev/cloud/blob/v2/device-simulator/src/apps/cloud_server.c
-
-  const char *cert = "-----BEGIN CERTIFICATE-----\n"
-                     "MIIB9zCCAZygAwIBAgIRAOwIWPAt19w7DswoszkVIEIwCgYIKoZIzj0EAwIwEzER\n"
-                     "MA8GA1UEChMIVGVzdCBPUkcwHhcNMTkwNTAyMjAwNjQ4WhcNMjkwMzEwMjAwNjQ4\n"
-                     "WjBHMREwDwYDVQQKEwhUZXN0IE9SRzEyMDAGA1UEAxMpdXVpZDpiNWEyYTQyZS1i\n"
-                     "Mjg1LTQyZjEtYTM2Yi0wMzRjOGZjOGVmZDUwWTATBgcqhkjOPQIBBggqhkjOPQMB\n"
-                     "BwNCAAQS4eiM0HNPROaiAknAOW08mpCKDQmpMUkywdcNKoJv1qnEedBhWne7Z0jq\n"
-                     "zSYQbyqyIVGujnI3K7C63NRbQOXQo4GcMIGZMA4GA1UdDwEB/wQEAwIDiDAzBgNV\n"
-                     "HSUELDAqBggrBgEFBQcDAQYIKwYBBQUHAwIGCCsGAQUFBwMBBgorBgEEAYLefAEG\n"
-                     "MAwGA1UdEwEB/wQCMAAwRAYDVR0RBD0wO4IJbG9jYWxob3N0hwQAAAAAhwR/AAAB\n"
-                     "hxAAAAAAAAAAAAAAAAAAAAAAhxAAAAAAAAAAAAAAAAAAAAABMAoGCCqGSM49BAMC\n"
-                     "A0kAMEYCIQDuhl6zj6gl2YZbBzh7Th0uu5izdISuU/ESG+vHrEp7xwIhANCA7tSt\n"
-                     "aBlce+W76mTIhwMFXQfyF3awWIGjOcfTV8pU\n"
-                     "-----END CERTIFICATE-----\n";
-
-  const char *key = "-----BEGIN EC PRIVATE KEY-----\n"
-                    "MHcCAQEEIMPeADszZajrkEy4YvACwcbR0pSdlKG+m8ALJ6lj/ykdoAoGCCqGSM49\n"
-                    "AwEHoUQDQgAEEuHojNBzT0TmogJJwDltPJqQig0JqTFJMsHXDSqCb9apxHnQYVp3\n"
-                    "u2dI6s0mEG8qsiFRro5yNyuwutzUW0Dl0A==\n"
-                    "-----END EC PRIVATE KEY-----\n";
-
+#ifndef OC_CLOUD
+#include "pki_certs.h"
   int credid =
-      oc_pki_add_mfg_cert(0, (const unsigned char *)cert, strlen(cert), (const unsigned char *)key, strlen(key));
-  if (credid < 0)
-  {
+    oc_pki_add_mfg_cert(0, (const unsigned char *)my_cert, strlen(my_cert), (const unsigned char *)my_key, strlen(my_key));
+  if (credid < 0) {
     PRINT("ERROR installing PKI certificate\n");
-    return;
-  }
-  else
-  {
+  } else {
     PRINT("Successfully installed PKI certificate\n");
   }
 
-  /*
   if (oc_pki_add_mfg_intermediate_cert(0, credid, (const unsigned char *)int_ca, strlen(int_ca)) < 0) {
     PRINT("ERROR installing intermediate CA certificate\n");
   } else {
     PRINT("Successfully installed intermediate CA certificate\n");
-  }*/
-
-  if (set_root_certificate() < 0)
-  {
-    PRINT("ERROR installing root certificate\n");
-    return;
   }
-  else
-  {
+
+  if (oc_pki_add_mfg_trust_anchor(0, (const unsigned char *)root_ca, strlen(root_ca)) < 0) {
+    PRINT("ERROR installing root certificate\n");
+  } else {
     PRINT("Successfully installed root certificate\n");
   }
 
   oc_pki_set_security_profile(0, OC_SP_BLACK, OC_SP_BLACK, credid);
+
+#else
+char * cloud_ca = "-----BEGIN CERTIFICATE-----\r\n"
+"MIIBhDCCASmgAwIBAgIQdAMxveYP9Nb48xe9kRm3ajAKBggqhkjOPQQDAjAxMS8w\r\n"
+"LQYDVQQDEyZPQ0YgQ2xvdWQgUHJpdmF0ZSBDZXJ0aWZpY2F0ZXMgUm9vdCBDQTAe\r\n"
+"Fw0xOTExMDYxMjAzNTJaFw0yOTExMDMxMjAzNTJaMDExLzAtBgNVBAMTJk9DRiBD\r\n"
+"bG91ZCBQcml2YXRlIENlcnRpZmljYXRlcyBSb290IENBMFkwEwYHKoZIzj0CAQYI\r\n"
+"KoZIzj0DAQcDQgAEaNJi86t5QlZiLcJ7uRMNlcwIpmFiJf9MOqyz2GGnGVBypU6H\r\n"
+"lwZHY2/l5juO/O4EH2s9h3HfcR+nUG2/tFzFEaMjMCEwDgYDVR0PAQH/BAQDAgEG\r\n"
+"MA8GA1UdEwEB/wQFMAMBAf8wCgYIKoZIzj0EAwIDSQAwRgIhAM7gFe39UJPIjIDE\r\n"
+"KrtyPSIGAk0OAO8txhow1BAGV486AiEAqszg1fTfOHdE/pfs8/9ZP5gEVVkexRHZ\r\n"
+"JCYVaa2Spbg=\r\n"
+"-----END CERTIFICATE-----\r\n";
+int rootca_credid =
+    oc_pki_add_trust_anchor(0, (const unsigned char *)cloud_ca, strlen(cloud_ca));
+  if (rootca_credid < 0) {
+    PRINT("ERROR installing root cert\n");
+    return;
+  }
+
+#endif // OC_CLOUD defined
 
 #else
   PRINT("No PKI certificates installed\n");
@@ -972,7 +606,8 @@ void initialize_variables(void)
   gpio_pad_select_gpio(BLINK_GPIO);
   gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT);
   gpio_set_level(BLINK_GPIO, g_binaryswitch_value);
-  mf_temp_setup();
+  
+  mf_temp_init();
 
   /* set the flag for NO oic/con resource. */
   oc_set_con_res_announced(false);
