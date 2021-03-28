@@ -1,0 +1,7 @@
+{
+    "idf.port": "/dev/ttyUSB0",
+    "idf.openOcdConfigs":[
+        "interface/ftdi/esp32_devkitj_v1.cfg",
+        "board/esp-wroom-32.cfg"
+    ]
+}
