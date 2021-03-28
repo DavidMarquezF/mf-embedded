@@ -71,6 +71,7 @@
 #include "oc_pki.h"
 #endif
 #include "mf_temp.h"
+#include "mf_switch_actuator.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
@@ -80,7 +81,6 @@
 #include "esp_wifi.h"
 #include "esp_event.h"
 #include "esp_log.h"
-#include "driver/gpio.h"
 #include "debug_print.h"
 
 #include <pthread.h>
@@ -89,11 +89,7 @@
 
 #define EXAMPLE_WIFI_SSID CONFIG_WIFI_SSID
 #define EXAMPLE_WIFI_PASS CONFIG_WIFI_PASSWORD
-#define BLINK_GPIO 13 //CONFIG_BLINK_GPIO
 #define STACK_SIZE 20000
-
-
-#define btoa(x) ((x) ? "true" : "false")
 
 #define MAX_STRING 30         /* max size of the strings. */
 #define MAX_PAYLOAD_STRING 65 /* max size strings in the payload */
@@ -121,24 +117,12 @@ static StaticTask_t xTaskBuffer;
 // the RTOS port.
 static StackType_t xStack[STACK_SIZE];
 
-/* global property variables for path: "/binaryswitch" */
-static char *g_binaryswitch_RESOURCE_PROPERTY_NAME_value = "value";                                  /* the name for the attribute */
-bool g_binaryswitch_value = false; /* current value of property "value" The status of the switch. */ /* registration data variables for the resources */
 
 /* global resource variables for path: /binaryswitch */
 static char *g_binaryswitch_RESOURCE_ENDPOINT = "/binaryswitch";                 /* used path for this resource */
 static char *g_binaryswitch_RESOURCE_TYPE[MAX_STRING] = {"oic.r.switch.binary"}; /* rt value (as an array) */
 int g_binaryswitch_nr_resource_types = 1;
 
-/* global property variables for path: "/freezer1" */
-static char *g_freezer1_RESOURCE_PROPERTY_NAME_precision = "precision"; /* the name for the attribute */
-double g_freezer1_precision = 0;                                        /* current value of property "precision"  When exposed the value in 'precision' provides a +/- tolerance against the Properties in the Resource. Thus if a Property is UP\
-DATED to a value and that Property then RETRIEVED, the RETRIEVED value is valid if in the range of the set value +/- precision */
-static char *g_freezer1_RESOURCE_PROPERTY_NAME_range = "range";         /* the name for the attribute */
-
-/* global property variables for path: "/light1" */
-static char *g_light1_RESOURCE_PROPERTY_NAME_value = "value";                                  /* the name for the attribute */
-bool g_light1_value = false; /* current value of property "value" The status of the switch. */ /* registration data variables for the resources */
 
 /**
 * function to set up the device.
@@ -194,42 +178,6 @@ int app_init(void)
   return ret;
 }
 
-/**
-* helper function to check if the POST input document contains 
-* the common readOnly properties or the resouce readOnly properties
-* @param name the name of the property
-* @return the error_status, e.g. if error_status is true, then the input document contains something illegal
-*/
-static bool
-check_on_readonly_common_resource_properties(oc_string_t name, bool error_state)
-{
-  if (strcmp(oc_string(name), "n") == 0)
-  {
-    error_state = true;
-    PRINT("   property \"n\" is ReadOnly \n");
-  }
-  else if (strcmp(oc_string(name), "if") == 0)
-  {
-    error_state = true;
-    PRINT("   property \"if\" is ReadOnly \n");
-  }
-  else if (strcmp(oc_string(name), "rt") == 0)
-  {
-    error_state = true;
-    PRINT("   property \"rt\" is ReadOnly \n");
-  }
-  else if (strcmp(oc_string(name), "id") == 0)
-  {
-    error_state = true;
-    PRINT("   property \"id\" is ReadOnly \n");
-  }
-  else if (strcmp(oc_string(name), "id") == 0)
-  {
-    error_state = true;
-    PRINT("   property \"id\" is ReadOnly \n");
-  }
-  return error_state;
-}
 
 static void sta_start(void *esp_netif, esp_event_base_t event_base,
                       int32_t event_id, void *event_data)
@@ -306,165 +254,6 @@ static void initialise_wifi(void)
 
 
 /**
-* get method for "/binaryswitch" resource.
-* function is called to intialize the return values of the GET method.
-* initialisation of the returned values are done from the global property values.
-* Resource Description:
-* This Resource describes a binary switch (on/off).
-* The Property "value" is a boolean.
-* A value of 'true' means that the switch is on.
-* A value of 'false' means that the switch is off.
-*
-* @param request the request representation.
-* @param interfaces the interface used for this call
-* @param user_data the user data.
-*/
-static void
-get_binaryswitch(oc_request_t *request, oc_interface_mask_t interfaces, void *user_data)
-{
-  (void)user_data; /* variable not used */
-  /* TODO: SENSOR add here the code to talk to the HW if one implements a sensor.
-     the call to the HW needs to fill in the global variable before it returns to this function here.
-     alternative is to have a callback from the hardware that sets the global variables.
-  
-     The implementation always return everything that belongs to the resource.
-     this implementation is not optimal, but is functionally correct and will pass CTT1.2.2 */
-  bool error_state = false;
-
-  PRINT("-- Begin get_binaryswitch: interface %d\n", interfaces);
-  oc_rep_start_root_object();
-  switch (interfaces)
-  {
-  case OC_IF_BASELINE:
-    PRINT("   Adding Baseline info\n");
-    oc_process_baseline_interface(request->resource);
-
-    /* property (boolean) 'value' */
-    oc_rep_set_boolean(root, value, g_binaryswitch_value);
-    PRINT("   %s : %s\n", g_binaryswitch_RESOURCE_PROPERTY_NAME_value, (char *)btoa(g_binaryswitch_value));
-    break;
-  case OC_IF_A:
-
-    /* property (boolean) 'value' */
-    oc_rep_set_boolean(root, value, g_binaryswitch_value);
-    PRINT("   %s : %s\n", g_binaryswitch_RESOURCE_PROPERTY_NAME_value, (char *)btoa(g_binaryswitch_value));
-    break;
-  default:
-    break;
-  }
-  oc_rep_end_root_object();
-  if (error_state == false)
-  {
-    oc_send_response(request, OC_STATUS_OK);
-  }
-  else
-  {
-    oc_send_response(request, OC_STATUS_BAD_OPTION);
-  }
-  PRINT("-- End get_binaryswitch\n");
-}
-
-/**
-* post method for "/binaryswitch" resource.
-* The function has as input the request body, which are the input values of the POST method.
-* The input values (as a set) are checked if all supplied values are correct.
-* If the input values are correct, they will be assigned to the global  property values.
-* Resource Description:
-
-*
-* @param request the request representation.
-* @param interfaces the used interfaces during the request.
-* @param user_data the supplied user data.
-*/
-static void
-post_binaryswitch(oc_request_t *request, oc_interface_mask_t interfaces, void *user_data)
-{
-  (void)interfaces;
-  (void)user_data;
-  bool error_state = false;
-  PRINT("-- Begin post_binaryswitch:\n");
-  oc_rep_t *rep = request->request_payload;
-
-  /* loop over the request document for each required input field to check if all required input fields are present */
-  bool var_in_request = false;
-  rep = request->request_payload;
-  while (rep != NULL)
-  {
-    if (strcmp(oc_string(rep->name), g_binaryswitch_RESOURCE_PROPERTY_NAME_value) == 0)
-    {
-      var_in_request = true;
-    }
-    rep = rep->next;
-  }
-  if (var_in_request == false)
-  {
-    error_state = true;
-    PRINT(" required property: 'value' not in request\n");
-  }
-  /* loop over the request document to check if all inputs are ok */
-  rep = request->request_payload;
-  while (rep != NULL)
-  {
-    PRINT("key: (check) %s \n", oc_string(rep->name));
-
-    error_state = check_on_readonly_common_resource_properties(rep->name, error_state);
-    if (strcmp(oc_string(rep->name), g_binaryswitch_RESOURCE_PROPERTY_NAME_value) == 0)
-    {
-      /* property "value" of type boolean exist in payload */
-      if (rep->type != OC_REP_BOOL)
-      {
-        error_state = true;
-        PRINT("   property 'value' is not of type bool %d \n", rep->type);
-      }
-    }
-    rep = rep->next;
-  }
-  /* if the input is ok, then process the input document and assign the global variables */
-  if (error_state == false)
-  {
-    switch (interfaces)
-    {
-    default:
-    {
-      /* loop over all the properties in the input document */
-      oc_rep_t *rep = request->request_payload;
-      while (rep != NULL)
-      {
-        PRINT("key: (assign) %s \n", oc_string(rep->name));
-        /* no error: assign the variables */
-
-        if (strcmp(oc_string(rep->name), g_binaryswitch_RESOURCE_PROPERTY_NAME_value) == 0)
-        {
-          /* assign "value" */
-          PRINT("  property 'value' : %s\n", (char *)btoa(rep->value.boolean));
-          g_binaryswitch_value = rep->value.boolean;
-        }
-        rep = rep->next;
-      }
-      /* set the response */
-      PRINT("Set response \n");
-      oc_rep_start_root_object();
-      /*oc_process_baseline_interface(request->resource); */
-      PRINT("   %s : %s", g_binaryswitch_RESOURCE_PROPERTY_NAME_value, (char *)btoa(g_binaryswitch_value));
-      oc_rep_set_boolean(root, value, g_binaryswitch_value);
-
-      oc_rep_end_root_object();
-      gpio_set_level(BLINK_GPIO, g_binaryswitch_value);
-      oc_send_response(request, OC_STATUS_CHANGED);
-    }
-    }
-  }
-  else
-  {
-    PRINT("  Returning Error \n");
-    /* TODO: add error response, if any */
-    //oc_send_response(request, OC_STATUS_NOT_MODIFIED);
-    oc_send_response(request, OC_STATUS_BAD_REQUEST);
-  }
-  PRINT("-- End post_binaryswitch\n");
-}
-
-/**
 * register all the resources to the stack
 * this function registers all application level resources:
 * - each resource path is bind to a specific function for the supported methods (GET, POST, PUT)
@@ -498,16 +287,8 @@ void register_resources(void)
   PRINT("Register Resource with local path \"/binaryswitch\"\n");
   oc_resource_t *res_binaryswitch = oc_new_resource(NULL, g_binaryswitch_RESOURCE_ENDPOINT, g_binaryswitch_nr_resource_types, 0);
   PRINT("     number of Resource Types: %d\n", g_binaryswitch_nr_resource_types);
-  for (int a = 0; a < g_binaryswitch_nr_resource_types; a++)
-  {
-    PRINT("     Resource Type: \"%s\"\n", g_binaryswitch_RESOURCE_TYPE[a]);
-    oc_resource_bind_resource_type(res_binaryswitch, g_binaryswitch_RESOURCE_TYPE[a]);
-  }
+  mf_switch_actuator_create_resource(res_binaryswitch);
 
-  oc_resource_bind_resource_interface(res_binaryswitch, OC_IF_A);        /* oic.if.a */
-  oc_resource_bind_resource_interface(res_binaryswitch, OC_IF_BASELINE); /* oic.if.baseline */
-  oc_resource_set_default_interface(res_binaryswitch, OC_IF_A);
-  PRINT("     Default OCF Interface: 'oic.if.a'\n");
   oc_resource_set_discoverable(res_binaryswitch, true);
   /* periodic observable
      to be used when one wants to send an event per time slice
@@ -517,10 +298,6 @@ void register_resources(void)
      events are send when oc_notify_observers(oc_resource_t *resource) is called.
     this function must be called when the value changes, preferable on an interrupt when something is read from the hardware. */
   /*oc_resource_set_observable(res_binaryswitch, true); */
-
-  oc_resource_set_request_handler(res_binaryswitch, OC_GET, get_binaryswitch, NULL);
-
-  oc_resource_set_request_handler(res_binaryswitch, OC_POST, post_binaryswitch, NULL);
 
 #ifdef OC_CLOUD
   oc_cloud_add_resource(res_binaryswitch);
@@ -533,9 +310,7 @@ void factory_presets_cb(size_t device, void *data)
 {
   (void)device;
   (void)data;
-  gpio_reset_pin(BLINK_GPIO);
-  gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT);
-
+  
 #if defined(OC_SECURITY) && defined(OC_PKI)
 
 #ifndef OC_CLOUD
@@ -601,12 +376,7 @@ int rootca_credid =
 void initialize_variables(void)
 {
   /* initialize global variables for resource "/binaryswitch" */
-  g_binaryswitch_value = false; /* current value of property "value" The status of the switch. */
-  gpio_reset_pin(BLINK_GPIO);
-  gpio_pad_select_gpio(BLINK_GPIO);
-  gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT);
-  gpio_set_level(BLINK_GPIO, g_binaryswitch_value);
-  
+  mf_switch_actuator_init();
   mf_temp_init();
 
   /* set the flag for NO oic/con resource. */
@@ -796,6 +566,7 @@ server_main(void *pvParameter)
   oc_cloud_manager_stop(ctx);
 #endif
   mf_temp_destroy();
+  mf_switch_actuator_destroy();
   oc_main_shutdown();
 }
 

@@ -92,10 +92,9 @@ get_temp(oc_request_t *request, oc_interface_mask_t iface_mask, void *user_data)
 
 uint8_t mf_temp_create_resource(oc_resource_t *temp_resource){
   oc_resource_bind_resource_type(temp_resource, "oic.r.temperature");
+  oc_resource_bind_resource_interface(temp_resource, OC_IF_BASELINE);
   oc_resource_bind_resource_interface(temp_resource, OC_IF_S);
   oc_resource_set_default_interface(temp_resource, OC_IF_S);
-  oc_resource_set_discoverable(temp_resource, true);
-  oc_resource_set_periodic_observable(temp_resource, 1);
   oc_resource_set_request_handler(temp_resource, OC_GET, get_temp, NULL);
   oc_resource_tag_func_desc(temp_resource, OC_ENUM_HEATING);
   oc_resource_tag_pos_desc(temp_resource, OC_POS_CENTRE);
