@@ -73,6 +73,7 @@
 #include "mf_temp.h"
 #include "mf_switch_actuator.h"
 #include "mf_ultrasound.h"
+#include "mf_spi.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
@@ -488,6 +489,7 @@ static void loop(void)
 
 static void init(void)
 {
+  mf_spi_init();
   tcpip_adapter_ip_info_t ip4_info = {0};
   struct ip6_addr if_ipaddr_ip6 = {0};
   ESP_LOGI(TAG, "iotivity server task started");

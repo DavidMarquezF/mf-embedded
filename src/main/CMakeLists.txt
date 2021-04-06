@@ -29,7 +29,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-format-truncation")
 
 idf_component_register(SRCS "main.c"
                     INCLUDE_DIRS ""
-                    PRIV_REQUIRES iotivity nvs_flash mf_temp mf_switch_actuator mf_ultrasound)
+                    PRIV_REQUIRES iotivity nvs_flash mf_temp mf_switch_actuator mf_spi mf_ultrasound)
 
 set_source_files_properties("main.c"
    PROPERTIES COMPILE_FLAGS

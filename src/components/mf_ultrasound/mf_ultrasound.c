@@ -5,7 +5,7 @@
 
 float g_distance_measurement = 0; /* current value of property "measurement"  Measured value for this sensor, units depend on the specific type of sensor */
 static char *g_distance_RESOURCE_PROPERTY_NAME_unit = "unit"; /* the name for the attribute */
-char g_distance_unit[] = "m"; /* current value of property "unit" SI unit in SenML of the measurement *//* registration data variables for the resources */
+char g_distance_unit[] = "cm"; /* current value of property "unit" SI unit in SenML of the measurement *//* registration data variables for the resources */
 
 
 /**
