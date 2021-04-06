@@ -72,6 +72,7 @@
 #endif
 #include "mf_temp.h"
 #include "mf_switch_actuator.h"
+#include "mf_ultrasound.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
@@ -117,12 +118,10 @@ static StaticTask_t xTaskBuffer;
 // the RTOS port.
 static StackType_t xStack[STACK_SIZE];
 
-
 /* global resource variables for path: /binaryswitch */
 static char *g_binaryswitch_RESOURCE_ENDPOINT = "/binaryswitch";                 /* used path for this resource */
 static char *g_binaryswitch_RESOURCE_TYPE[MAX_STRING] = {"oic.r.switch.binary"}; /* rt value (as an array) */
 int g_binaryswitch_nr_resource_types = 1;
-
 
 /**
 * function to set up the device.
@@ -177,7 +176,6 @@ int app_init(void)
 #endif
   return ret;
 }
-
 
 static void sta_start(void *esp_netif, esp_event_base_t event_base,
                       int32_t event_id, void *event_data)
@@ -252,7 +250,6 @@ static void initialise_wifi(void)
   ESP_ERROR_CHECK(esp_wifi_start());
 }
 
-
 /**
 * register all the resources to the stack
 * this function registers all application level resources:
@@ -284,6 +281,20 @@ void register_resources(void)
 
   oc_add_resource(res_temperature);
 
+  oc_resource_t *res_distance = oc_new_resource("distance", "/distance", 1, 0);
+  mf_ultrasound_create_resource(res_distance);
+  oc_resource_set_discoverable(res_distance, true);
+  oc_resource_set_periodic_observable(res_distance, 1);
+  
+#ifdef OC_CLOUD
+  oc_cloud_add_resource(res_distance);
+#endif
+
+  oc_add_resource(res_distance);
+
+
+
+
   PRINT("Register Resource with local path \"/binaryswitch\"\n");
   oc_resource_t *res_binaryswitch = oc_new_resource(NULL, g_binaryswitch_RESOURCE_ENDPOINT, g_binaryswitch_nr_resource_types, 0);
   PRINT("     number of Resource Types: %d\n", g_binaryswitch_nr_resource_types);
@@ -305,53 +316,62 @@ void register_resources(void)
   oc_add_resource(res_binaryswitch);
 }
 
-
 void factory_presets_cb(size_t device, void *data)
 {
   (void)device;
   (void)data;
-  
+
 #if defined(OC_SECURITY) && defined(OC_PKI)
 
 #ifndef OC_CLOUD
 #include "pki_certs.h"
   int credid =
-    oc_pki_add_mfg_cert(0, (const unsigned char *)my_cert, strlen(my_cert), (const unsigned char *)my_key, strlen(my_key));
-  if (credid < 0) {
+      oc_pki_add_mfg_cert(0, (const unsigned char *)my_cert, strlen(my_cert), (const unsigned char *)my_key, strlen(my_key));
+  if (credid < 0)
+  {
     PRINT("ERROR installing PKI certificate\n");
-  } else {
+  }
+  else
+  {
     PRINT("Successfully installed PKI certificate\n");
   }
 
-  if (oc_pki_add_mfg_intermediate_cert(0, credid, (const unsigned char *)int_ca, strlen(int_ca)) < 0) {
+  if (oc_pki_add_mfg_intermediate_cert(0, credid, (const unsigned char *)int_ca, strlen(int_ca)) < 0)
+  {
     PRINT("ERROR installing intermediate CA certificate\n");
-  } else {
+  }
+  else
+  {
     PRINT("Successfully installed intermediate CA certificate\n");
   }
 
-  if (oc_pki_add_mfg_trust_anchor(0, (const unsigned char *)root_ca, strlen(root_ca)) < 0) {
+  if (oc_pki_add_mfg_trust_anchor(0, (const unsigned char *)root_ca, strlen(root_ca)) < 0)
+  {
     PRINT("ERROR installing root certificate\n");
-  } else {
+  }
+  else
+  {
     PRINT("Successfully installed root certificate\n");
   }
 
   oc_pki_set_security_profile(0, OC_SP_BLACK, OC_SP_BLACK, credid);
 
 #else
-char * cloud_ca = "-----BEGIN CERTIFICATE-----\r\n"
-"MIIBhDCCASmgAwIBAgIQdAMxveYP9Nb48xe9kRm3ajAKBggqhkjOPQQDAjAxMS8w\r\n"
-"LQYDVQQDEyZPQ0YgQ2xvdWQgUHJpdmF0ZSBDZXJ0aWZpY2F0ZXMgUm9vdCBDQTAe\r\n"
-"Fw0xOTExMDYxMjAzNTJaFw0yOTExMDMxMjAzNTJaMDExLzAtBgNVBAMTJk9DRiBD\r\n"
-"bG91ZCBQcml2YXRlIENlcnRpZmljYXRlcyBSb290IENBMFkwEwYHKoZIzj0CAQYI\r\n"
-"KoZIzj0DAQcDQgAEaNJi86t5QlZiLcJ7uRMNlcwIpmFiJf9MOqyz2GGnGVBypU6H\r\n"
-"lwZHY2/l5juO/O4EH2s9h3HfcR+nUG2/tFzFEaMjMCEwDgYDVR0PAQH/BAQDAgEG\r\n"
-"MA8GA1UdEwEB/wQFMAMBAf8wCgYIKoZIzj0EAwIDSQAwRgIhAM7gFe39UJPIjIDE\r\n"
-"KrtyPSIGAk0OAO8txhow1BAGV486AiEAqszg1fTfOHdE/pfs8/9ZP5gEVVkexRHZ\r\n"
-"JCYVaa2Spbg=\r\n"
-"-----END CERTIFICATE-----\r\n";
-int rootca_credid =
-    oc_pki_add_trust_anchor(0, (const unsigned char *)cloud_ca, strlen(cloud_ca));
-  if (rootca_credid < 0) {
+  char *cloud_ca = "-----BEGIN CERTIFICATE-----\r\n"
+                   "MIIBhDCCASmgAwIBAgIQdAMxveYP9Nb48xe9kRm3ajAKBggqhkjOPQQDAjAxMS8w\r\n"
+                   "LQYDVQQDEyZPQ0YgQ2xvdWQgUHJpdmF0ZSBDZXJ0aWZpY2F0ZXMgUm9vdCBDQTAe\r\n"
+                   "Fw0xOTExMDYxMjAzNTJaFw0yOTExMDMxMjAzNTJaMDExLzAtBgNVBAMTJk9DRiBD\r\n"
+                   "bG91ZCBQcml2YXRlIENlcnRpZmljYXRlcyBSb290IENBMFkwEwYHKoZIzj0CAQYI\r\n"
+                   "KoZIzj0DAQcDQgAEaNJi86t5QlZiLcJ7uRMNlcwIpmFiJf9MOqyz2GGnGVBypU6H\r\n"
+                   "lwZHY2/l5juO/O4EH2s9h3HfcR+nUG2/tFzFEaMjMCEwDgYDVR0PAQH/BAQDAgEG\r\n"
+                   "MA8GA1UdEwEB/wQFMAMBAf8wCgYIKoZIzj0EAwIDSQAwRgIhAM7gFe39UJPIjIDE\r\n"
+                   "KrtyPSIGAk0OAO8txhow1BAGV486AiEAqszg1fTfOHdE/pfs8/9ZP5gEVVkexRHZ\r\n"
+                   "JCYVaa2Spbg=\r\n"
+                   "-----END CERTIFICATE-----\r\n";
+  int rootca_credid =
+      oc_pki_add_trust_anchor(0, (const unsigned char *)cloud_ca, strlen(cloud_ca));
+  if (rootca_credid < 0)
+  {
     PRINT("ERROR installing root cert\n");
     return;
   }
@@ -363,11 +383,6 @@ int rootca_credid =
 #endif /* OC_SECURITY && OC_PKI */
 }
 
-
-
-
-
-
 /**
 * intializes the global variables
 * registers and starts the handler
@@ -378,10 +393,10 @@ void initialize_variables(void)
   /* initialize global variables for resource "/binaryswitch" */
   mf_switch_actuator_init();
   mf_temp_init();
+  mf_ultrasound_init();
 
   /* set the flag for NO oic/con resource. */
   oc_set_con_res_announced(false);
-   
 }
 
 oc_event_callback_retval_t heap_dbg(void *v)
@@ -526,7 +541,7 @@ server_main(void *pvParameter)
 
   /*intialize the variables */
   initialize_variables();
-  
+
 #endif /* OC_SECURITY */
 
   /* initializes the handlers structure */
@@ -567,6 +582,7 @@ server_main(void *pvParameter)
 #endif
   mf_temp_destroy();
   mf_switch_actuator_destroy();
+  mf_ultrasound_destroy();
   oc_main_shutdown();
 }
 
