@@ -74,6 +74,7 @@
 #include "mf_switch_actuator.h"
 #include "mf_ultrasound.h"
 #include "mf_spi.h"
+#include "mf_spi_device.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
@@ -394,7 +395,7 @@ void initialize_variables(void)
   /* initialize global variables for resource "/binaryswitch" */
   mf_switch_actuator_init();
   mf_temp_init();
-  mf_ultrasound_init();
+  assert(mf_ultrasound_init() == 0);
 
   /* set the flag for NO oic/con resource. */
   oc_set_con_res_announced(false);
@@ -489,7 +490,11 @@ static void loop(void)
 
 static void init(void)
 {
-  mf_spi_init();
+  PRINT("MAIN INIT...\n");
+  uint8_t spi_enable_pins[MF_SPI_MAX_DEVICES] = {5}; 
+  assert(mf_spi_init(spi_enable_pins) == 0);
+  assert(mf_spi_device_discover_devices()==0);
+
   tcpip_adapter_ip_info_t ip4_info = {0};
   struct ip6_addr if_ipaddr_ip6 = {0};
   ESP_LOGI(TAG, "iotivity server task started");
