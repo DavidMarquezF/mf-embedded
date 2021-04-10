@@ -70,11 +70,10 @@
 /* code to include an pki certificate and root trust anchor */
 #include "oc_pki.h"
 #endif
-#include "mf_temp.h"
-#include "mf_switch_actuator.h"
-#include "mf_ultrasound.h"
+
 #include "mf_spi.h"
 #include "mf_spi_device.h"
+#include "mf_main.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
@@ -131,6 +130,7 @@ int g_binaryswitch_nr_resource_types = 1;
 */
 int app_init(void)
 {
+  PRINT("\nAPP INIT\n");
   int ret = oc_init_platform("ocf", NULL, NULL);
   /* the settings determine the appearance of the device on the network
      can be ocf.2.2.0 (or even higher)
@@ -252,77 +252,12 @@ static void initialise_wifi(void)
   ESP_ERROR_CHECK(esp_wifi_start());
 }
 
-/**
-* register all the resources to the stack
-* this function registers all application level resources:
-* - each resource path is bind to a specific function for the supported methods (GET, POST, PUT)
-* - each resource is 
-*   - secure
-*   - observable
-*   - discoverable 
-*   - used interfaces, including the default interface.
-*     default interface is the first of the list of interfaces as specified in the input file
-*/
-void register_resources(void)
-{
-  PRINT("Register Resource with local path \"/freezer1\"\n");
-  oc_resource_t *res_temperature = oc_new_resource("tempsetter", "/temp", 1, 0);
-  mf_temp_create_resource(res_temperature);
-  oc_resource_set_discoverable(res_temperature, true);
-  /* periodic observable                                                                                                                                                                                   
-     to be used when one wants to send an event per time slice                                                                                                                                             
-     period is 1 second */
-  oc_resource_set_periodic_observable(res_temperature, 1);
-  /* set observable                                                                                                                                                                                        
-     events are send when oc_notify_observers(oc_resource_t *resource) is called.                                                                                                                          
-    this function must be called when the value changes, preferable on an interrupt when something is read from the hardware. */
-  /*oc_resource_set_observable(res_temperature, true); */
-#ifdef OC_CLOUD
-  oc_cloud_add_resource(res_temperature);
-#endif
-
-  oc_add_resource(res_temperature);
-
-  oc_resource_t *res_distance = oc_new_resource("distance", "/distance", 1, 0);
-  mf_ultrasound_create_resource(res_distance);
-  oc_resource_set_discoverable(res_distance, true);
-  oc_resource_set_periodic_observable(res_distance, 1);
-  
-#ifdef OC_CLOUD
-  oc_cloud_add_resource(res_distance);
-#endif
-
-  oc_add_resource(res_distance);
-
-
-
-
-  PRINT("Register Resource with local path \"/binaryswitch\"\n");
-  oc_resource_t *res_binaryswitch = oc_new_resource(NULL, g_binaryswitch_RESOURCE_ENDPOINT, g_binaryswitch_nr_resource_types, 0);
-  PRINT("     number of Resource Types: %d\n", g_binaryswitch_nr_resource_types);
-  mf_switch_actuator_create_resource(res_binaryswitch);
-
-  oc_resource_set_discoverable(res_binaryswitch, true);
-  /* periodic observable
-     to be used when one wants to send an event per time slice
-     period is 1 second */
-  oc_resource_set_periodic_observable(res_binaryswitch, 1);
-  /* set observable
-     events are send when oc_notify_observers(oc_resource_t *resource) is called.
-    this function must be called when the value changes, preferable on an interrupt when something is read from the hardware. */
-  /*oc_resource_set_observable(res_binaryswitch, true); */
-
-#ifdef OC_CLOUD
-  oc_cloud_add_resource(res_binaryswitch);
-#endif
-  oc_add_resource(res_binaryswitch);
-}
 
 void factory_presets_cb(size_t device, void *data)
 {
   (void)device;
   (void)data;
-
+PRINT("\nFactory presets...\n");
 #if defined(OC_SECURITY) && defined(OC_PKI)
 
 #ifndef OC_CLOUD
@@ -393,10 +328,7 @@ void factory_presets_cb(size_t device, void *data)
 void initialize_variables(void)
 {
   /* initialize global variables for resource "/binaryswitch" */
-  mf_switch_actuator_init();
-  mf_temp_init();
-  assert(mf_ultrasound_init() == 0);
-
+  assert(mf_main_init_components() == 0);
   /* set the flag for NO oic/con resource. */
   oc_set_con_res_announced(false);
 }
@@ -554,7 +486,7 @@ server_main(void *pvParameter)
   /* initializes the handlers structure */
   static const oc_handler_t handler = {.init = app_init,
                                        .signal_event_loop = signal_event_loop,
-                                       .register_resources = register_resources};
+                                       .register_resources = mf_main_register_resources};
 
   oc_set_factory_presets_cb(factory_presets_cb, NULL);
 
@@ -587,9 +519,7 @@ server_main(void *pvParameter)
   PRINT("Stop Cloud Manager\n");
   oc_cloud_manager_stop(ctx);
 #endif
-  mf_temp_destroy();
-  mf_switch_actuator_destroy();
-  mf_ultrasound_destroy();
+ mf_main_destroy_components();
   oc_main_shutdown();
 }
 
