@@ -1,6 +1,7 @@
 #include "mf_main.h"
 #include "oc_api.h"
 #include "mf_component_handler.h"
+#include "mf_discovery.h"
 
 /**
 * register all the resources to the stack
@@ -15,6 +16,8 @@
 */
 void mf_main_register_resources(void)
 {
+    mf_discovery_register_resource(0);
+
     PRINT("\nREGISTERING MF RESOURCES...\n");
     //Keep components inside scope
     #include "gen/components.h"

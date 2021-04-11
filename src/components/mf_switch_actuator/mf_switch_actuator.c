@@ -39,23 +39,17 @@ get_switch_actuator(oc_request_t *request, oc_interface_mask_t interfaces, void 
      this implementation is not optimal, but is functionally correct and will pass CTT1.2.2 */
   bool error_state = false;
 
-  PRINT("-- Begin get_binaryswitch: interface %d\n", interfaces);
   oc_rep_start_root_object();
   switch (interfaces)
   {
   case OC_IF_BASELINE:
-    PRINT("   Adding Baseline info\n");
     oc_process_baseline_interface(request->resource);
-
-    /* property (boolean) 'value' */
-    oc_rep_set_boolean(root, value, g_binaryswitch_value);
-    PRINT("   %s : %s\n", g_binaryswitch_RESOURCE_PROPERTY_NAME_value, (char *)btoa(g_binaryswitch_value));
-    break;
+    /* fall through */
   case OC_IF_A:
 
     /* property (boolean) 'value' */
     oc_rep_set_boolean(root, value, g_binaryswitch_value);
-    PRINT("   %s : %s\n", g_binaryswitch_RESOURCE_PROPERTY_NAME_value, (char *)btoa(g_binaryswitch_value));
+   // PRINT("   %s : %s\n", g_binaryswitch_RESOURCE_PROPERTY_NAME_value, (char *)btoa(g_binaryswitch_value));
     break;
   default:
     break;
@@ -69,7 +63,6 @@ get_switch_actuator(oc_request_t *request, oc_interface_mask_t interfaces, void 
   {
     oc_send_response(request, OC_STATUS_BAD_OPTION);
   }
-  PRINT("-- End get_binaryswitch\n");
 }
 
 /**

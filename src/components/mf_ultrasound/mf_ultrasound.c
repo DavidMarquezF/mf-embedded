@@ -28,12 +28,12 @@ get_distance(oc_request_t *request, oc_interface_mask_t interfaces, void *user_d
   
   mf_hw_ultrasound_get_value(&g_distance_measurement);
   
-                  PRINT("RESULT: %f\n", g_distance_measurement);
+               //   PRINT("RESULT: %f\n", g_distance_measurement);
 
   bool error_state = false;
   
   
-  PRINT("-- Begin get_distance: interface %d\n", interfaces);
+ // PRINT("-- Begin get_distance: interface %d\n", interfaces);
   oc_rep_start_root_object();
   switch (interfaces) {
   case OC_IF_BASELINE:

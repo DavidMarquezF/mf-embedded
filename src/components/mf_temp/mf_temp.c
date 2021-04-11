@@ -13,8 +13,8 @@ units_t temp_units = C;
 static void
 get_temp(oc_request_t *request, oc_interface_mask_t iface_mask, void *user_data)
 {
+  PRINT("get temp\n");
   (void)user_data;
-  PRINT("GET_temp:\n");
   bool invalid_query = false;
   char *units;
 

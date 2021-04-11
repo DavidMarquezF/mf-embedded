@@ -85,14 +85,12 @@ uint8_t mf_hw_temp_get_value(float* result)
 
     
   // Print results in a separate loop, after all have been read
-  PRINT("\nTemperature readings (degrees C)\n");
     if (errors != DS18B20_OK)
     {
     PRINT("Error reading temp");
     return 1;
     }
 
-    PRINT("  Temp: %.1f\n", readings);
     *result = readings;
     return 0;
   
