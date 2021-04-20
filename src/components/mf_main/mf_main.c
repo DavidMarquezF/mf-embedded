@@ -16,6 +16,7 @@
 */
 void mf_main_register_resources(void)
 {
+    return;
     mf_discovery_register_resource(0);
 
     PRINT("\nREGISTERING MF RESOURCES...\n");

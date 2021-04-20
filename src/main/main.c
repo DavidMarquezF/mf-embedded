@@ -74,6 +74,7 @@
 #include "mf_spi.h"
 #include "mf_spi_device.h"
 #include "mf_main.h"
+#include "mf_updates_handler.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
@@ -401,6 +402,7 @@ cloud_status_handler(oc_cloud_context_t *ctx, oc_cloud_status_t status,
 
 static void loop(void)
 {
+  download_update_coap();
   oc_clock_time_t next_event;
   while (quit != 1)
   {
@@ -423,6 +425,9 @@ static void loop(void)
 static void init(void)
 {
   PRINT("MAIN INIT...\n");
+
+  mf_updates_handler_init_check_if_updated();
+
   uint8_t spi_enable_pins[MF_SPI_MAX_DEVICES] = {5}; 
   assert(mf_spi_init(spi_enable_pins) == 0);
   assert(mf_spi_device_discover_devices()==0);

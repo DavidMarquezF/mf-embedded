@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.5)
 
 list(APPEND EXTRA_COMPONENT_DIRS "/home/david/iot-lite/iotivity-lite/port/esp32/builder")
 
+set(PROJECT_VER "0.0.0.0")
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
