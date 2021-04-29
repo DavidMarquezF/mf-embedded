@@ -74,6 +74,7 @@
 #include "mf_spi.h"
 #include "mf_spi_device.h"
 #include "mf_main.h"
+#include "mf_updates_handler.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
@@ -423,6 +424,9 @@ static void loop(void)
 static void init(void)
 {
   PRINT("MAIN INIT...\n");
+
+  mf_updates_handler_init_check_if_updated();
+
   uint8_t spi_enable_pins[MF_SPI_MAX_DEVICES] = {5}; 
   assert(mf_spi_init(spi_enable_pins) == 0);
   assert(mf_spi_device_discover_devices()==0);
@@ -509,6 +513,9 @@ server_main(void *pvParameter)
   if (ctx)
   {
     oc_cloud_manager_start(ctx, cloud_status_handler, NULL);
+  }
+  else{
+    PRINT("Error getting cloud ctx\n");
   }
 #endif
   oc_set_delayed_callback(NULL, heap_dbg, 1);

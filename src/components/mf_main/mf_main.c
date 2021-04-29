@@ -17,7 +17,8 @@
 void mf_main_register_resources(void)
 {
     mf_discovery_register_resource(0);
-
+   // return;
+    
     PRINT("\nREGISTERING MF RESOURCES...\n");
     //Keep components inside scope
     #include "gen/components.h"

@@ -25,7 +25,7 @@ uint8_t mf_component_handler_register(mf_component_config_t config)
     /* periodic observable                                                                                                                                                                                   
      to be used when one wants to send an event per time slice                                                                                                                                             
      period is 1 second */
-    oc_resource_set_periodic_observable(res, 1);
+   // oc_resource_set_periodic_observable(res, 1);
     /* set observable                                                                                                                                                                                        
      events are send when oc_notify_observers(oc_resource_t *resource) is called.                                                                                                                          
     this function must be called when the value changes, preferable on an interrupt when something is read from the hardware. */
