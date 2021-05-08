@@ -28,7 +28,12 @@ menu "IoTivity Example Configuration"
         default "y"
         help
             enable or disable DYNAMIC
-    
+    config SOFTWARE_UPDATES
+        bool "SOFTWARE_UPDATES"
+        default "y"
+        help
+            enable or disable SOFTWARE_UPDATES
+
     config SECURE
         bool "SECURE"
         default "y"

@@ -185,18 +185,19 @@ prepare_coap_request(oc_client_cb_t *cb)
     }
 
     // oc_rep_new(transaction->message->data + COAP_MAX_HEADER_SIZE, OC_BLOCK_SIZE);
-
-    //#ifdef OC_TCP
-    // if (cb->endpoint.flags & TCP) {
-    //   coap_tcp_init_message(request, cb->method);
-    // } else
-    //#endif /* OC_TCP */
+    PRINT("PREPARE COAP REQUEST\n");
+    #ifdef OC_TCP
+    if (cb->endpoint.flags & TCP) {
+        PRINT("Is tcp endpoint");
+        coap_tcp_init_message(request, cb->method);
+    } else
+    #endif /* OC_TCP */
     {
         coap_udp_init_message(request, type, cb->method, cb->mid);
     }
 
     coap_set_header_accept(request, TEXT_PLAIN);
-    //coap_set_header_block2(request, 0, 0, 2048);
+    coap_set_header_block2(request, 0, 0, 1024);
 
     coap_set_token(request, cb->token, cb->token_len);
 
