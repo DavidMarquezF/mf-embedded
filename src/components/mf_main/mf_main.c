@@ -1,7 +1,9 @@
 #include "mf_main.h"
 #include "oc_api.h"
+#include "oc_core_res.h"
 #include "mf_component_handler.h"
 #include "mf_discovery.h"
+
 
 /**
 * register all the resources to the stack
@@ -16,6 +18,13 @@
 */
 void mf_main_register_resources(void)
 {
+
+    #ifdef OC_SOFTWARE_UPDATE
+    // It is important that the sw and pstat resources are exposed to the cloud, so that updates can be triggered both schedueled and manually from there
+    oc_cloud_add_resource(oc_core_get_resource_by_index(OCF_SW_UPDATE, 0));
+    oc_cloud_add_resource(oc_core_get_resource_by_index(OCF_SEC_PSTAT, 0));
+    #endif
+    
     mf_discovery_register_resource(0);
    // return;
     
