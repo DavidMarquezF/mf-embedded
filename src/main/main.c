@@ -295,7 +295,7 @@ PRINT("\nFactory presets...\n");
   oc_pki_set_security_profile(0, OC_SP_BLACK, OC_SP_BLACK, credid);
 
 #else
-  char *cloud_ca = "-----BEGIN CERTIFICATE-----\r\n"
+  /*char *cloud_ca = "-----BEGIN CERTIFICATE-----\r\n"
                    "MIIBhDCCASmgAwIBAgIQdAMxveYP9Nb48xe9kRm3ajAKBggqhkjOPQQDAjAxMS8w\r\n"
                    "LQYDVQQDEyZPQ0YgQ2xvdWQgUHJpdmF0ZSBDZXJ0aWZpY2F0ZXMgUm9vdCBDQTAe\r\n"
                    "Fw0xOTExMDYxMjAzNTJaFw0yOTExMDMxMjAzNTJaMDExLzAtBgNVBAMTJk9DRiBD\r\n"
@@ -305,7 +305,8 @@ PRINT("\nFactory presets...\n");
                    "MA8GA1UdEwEB/wQFMAMBAf8wCgYIKoZIzj0EAwIDSQAwRgIhAM7gFe39UJPIjIDE\r\n"
                    "KrtyPSIGAk0OAO8txhow1BAGV486AiEAqszg1fTfOHdE/pfs8/9ZP5gEVVkexRHZ\r\n"
                    "JCYVaa2Spbg=\r\n"
-                   "-----END CERTIFICATE-----\r\n";
+                   "-----END CERTIFICATE-----\r\n";*/
+                   char *cloud_ca = "-----BEGIN CERTIFICATE-----\nMIIBZDCCAQqgAwIBAgIQMAmbP7Ky440gqmQ5zd2WxjAKBggqhkjOPQQDAjASMRAw\nDgYDVQQDEwdSb290IENBMB4XDTIxMDUxMjA4MDkzN1oXDTIyMDUxMjA4MDkzN1ow\nEjEQMA4GA1UEAxMHUm9vdCBDQTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABCfs\nqHqRU847vWwF7mjte4WpFXbsijfnwNqowuMZA2Ukmj2eectwdZvPXhg5mjMGqe3f\n6PWEPAfuB0LE+AhU7HKjQjBAMA4GA1UdDwEB/wQEAwIBBjAPBgNVHRMBAf8EBTAD\nAQH/MB0GA1UdDgQWBBTV3osb9E4vH37YbHconjG1i6EIzzAKBggqhkjOPQQDAgNI\nADBFAiEAwk45qwEzi+V0528CEo45YX2zZ5XpT1Y0OIQMV7A30k8CICArsq/4G2jl\nrxHg3fOo4Zc6HvVi3nv+m+hjufWzh9Ih\n-----END CERTIFICATE-----\n";
   int rootca_credid =
       oc_pki_add_trust_anchor(0, (const unsigned char *)cloud_ca, strlen(cloud_ca));
   if (rootca_credid < 0)
@@ -384,6 +385,7 @@ cloud_status_handler(oc_cloud_context_t *ctx, oc_cloud_status_t status,
   if (status & OC_CLOUD_LOGGED_IN)
   {
     PRINT("\t\t-Logged In\n");
+    mf_main_cloud_login();
   }
   if (status & OC_CLOUD_LOGGED_OUT)
   {
@@ -496,6 +498,8 @@ server_main(void *pvParameter)
 
   // This is a known issue , where max_app_data_size has to be between 6 and 8 Kb to work
   oc_set_max_app_data_size(7168);
+
+  mf_updates_handler_init();
 
   /* start the stack */
   init = oc_main_init(&handler);

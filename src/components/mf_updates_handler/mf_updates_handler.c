@@ -25,6 +25,13 @@ static const esp_partition_t *update_partition;
 static esp_ota_handle_t update_handle;
 static size_t device_upgrading;
 
+typedef enum {
+    NothingToBeDone,
+    NotifySuccess
+} UpdateStatus;
+
+static UpdateStatus curr_status = NothingToBeDone;
+
 static void prepare_update(void)
 {
     /* update handle : set by esp_ota_begin(), must be freed via esp_ota_end() */
@@ -289,11 +296,6 @@ static void finish_download_handler(oc_client_response_t *r)
     oc_swupdate_notify_downloaded(device_upgrading, "2.0", OC_SWUPDATE_RESULT_SUCCESS);  
 }
 
-void download_update_coap(void)
-{
-
-}
-
 
 static int validate_purl(const char *purl)
 {
@@ -395,6 +397,7 @@ static int perform_upgrade(size_t device, const char *url)
 }
 
 
+
 void mf_updates_handler_init_check_if_updated(void){
     const esp_partition_t *running = esp_ota_get_running_partition();
     esp_ota_img_states_t ota_state;
@@ -407,8 +410,7 @@ void mf_updates_handler_init_check_if_updated(void){
                       //         oc_swupdate_notify_done((size_t)0, OC_SWUPDATE_RESULT_SUCCESS);
 
                 esp_ota_mark_app_valid_cancel_rollback();
-                // TODO: save the device being upgraded somewhere
-
+                curr_status = NotifySuccess;
             //} else {
              //   ESP_LOGE(TAG, "Diagnostics failed! Start rollback to the previous version ...");
               //  esp_ota_mark_app_invalid_rollback_and_reboot();
@@ -417,6 +419,14 @@ void mf_updates_handler_init_check_if_updated(void){
     }
 }
 
+
+void mf_updates_handler_cloud_login(void){
+    if(curr_status == NotifySuccess){
+        PRINT("Notifying successful upgrade\n");
+        oc_swupdate_notify_done((size_t)0, OC_SWUPDATE_RESULT_SUCCESS);
+        curr_status = NothingToBeDone;
+    }
+}
 
 void mf_updates_handler_init(void)
 {

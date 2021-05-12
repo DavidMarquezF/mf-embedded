@@ -3,6 +3,7 @@
 #include "oc_core_res.h"
 #include "mf_component_handler.h"
 #include "mf_discovery.h"
+#include "mf_updates_handler.h"
 
 
 /**
@@ -43,4 +44,8 @@ uint8_t mf_main_init_components(void){
 }
 uint8_t mf_main_destroy_components(void){
     return mf_component_handler_destroy_components();
+}
+
+void mf_main_cloud_login(void){
+    mf_updates_handler_cloud_login();
 }
