@@ -266,8 +266,8 @@ static void finish_download_handler(oc_client_response_t *r)
             ESP_LOGW(TAG, "Couldn't fully download, service unavailable");
         }
         
-        oc_swupdate_notify_downloaded(device_upgrading, "2.0", OC_SWUPDATE_RESULT_CONN_FAIL);
         esp_ota_abort(update_handle);
+        oc_swupdate_notify_done(device_upgrading, OC_SWUPDATE_RESULT_CONN_FAIL);
         return;
     }
     PRINT("Code: %d\n", r->code);
@@ -283,6 +283,7 @@ static void finish_download_handler(oc_client_response_t *r)
         } else {
             ESP_LOGE(TAG, "esp_ota_end failed (%s)!", esp_err_to_name(err));
         }
+        oc_swupdate_notify_done(device_upgrading, OC_SWUPDATE_RESULT_SVV_FAIL);
         return;
     }
     oc_swupdate_notify_downloaded(device_upgrading, "2.0", OC_SWUPDATE_RESULT_SUCCESS);  
@@ -351,7 +352,7 @@ static int download_update(size_t device, const char *url)
     if (!cb)
     {
         PRINT("Error creating CB\n");
-        oc_swupdate_notify_downloaded(device, "2.0", OC_SWUPDATE_RESULT_LESS_RAM);
+        oc_swupdate_notify_done(device, OC_SWUPDATE_RESULT_LESS_RAM);
         return -1;
     }
 
@@ -359,13 +360,13 @@ static int download_update(size_t device, const char *url)
     {
         if(!dispatch_coap_request()){
             PRINT("Error dispatching CoAp\n");
-            oc_swupdate_notify_downloaded(device, "2.0", OC_SWUPDATE_RESULT_LESS_RAM);
+            oc_swupdate_notify_done(device, OC_SWUPDATE_RESULT_LESS_RAM);
             return -1;
         }
     }
     else{
         PRINT("Error preparing CoAP\n");
-        oc_swupdate_notify_downloaded(device, "2.0", OC_SWUPDATE_RESULT_LESS_RAM);
+        oc_swupdate_notify_done(device, OC_SWUPDATE_RESULT_LESS_RAM);
         return -1;
     }
         
@@ -382,8 +383,7 @@ static int perform_upgrade(size_t device, const char *url)
     err = esp_ota_set_boot_partition(update_partition);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "esp_ota_set_boot_partition failed (%s)!", esp_err_to_name(err));
-        oc_swupdate_notify_upgrading(device, "2.0", oc_clock_time(),
-                                 OC_SWUPDATE_RESULT_UPGRADE_FAIL);
+        oc_swupdate_notify_done(device, OC_SWUPDATE_RESULT_UPGRADE_FAIL);
         return -1;
     }
     ESP_LOGI(TAG, "Prepare to restart system!");
