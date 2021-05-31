@@ -14,15 +14,8 @@ typedef struct {
 
 static mf_spi_device_internal_t devices[MF_SPI_MAX_DEVICES]; 
 
-static uint8_t send_and_receive(mf_spi_device_t dev, mf_command_t cmd, uint8_t * message, size_t msg_size, void * out_value, size_t size){
-    uint8_t ret = mf_spi_send_message(dev, cmd, message, msg_size);
-    if(ret != 0)
-        return ret;
-    return mf_spi_receive_message(dev, out_value, size);
-}
-
 static uint8_t send_and_receive_only_cmd(mf_spi_device_t dev, mf_command_t cmd, void * out_value, size_t size) {
-    return send_and_receive(dev, cmd, NULL, 0, out_value, size);
+    return mf_spi_send_and_receive_message(dev, cmd, NULL, 0, out_value, size);
 }
 
 uint8_t mf_spi_device_discover_devices(void){
@@ -39,6 +32,7 @@ uint8_t mf_spi_device_discover_devices(void){
                 devices[i].spi_device = dev;
             }
             else{
+                PRINT("\t\tNo module available\n");
                 devices[i].device = MF_DEVICE_INVALID;
             }
             

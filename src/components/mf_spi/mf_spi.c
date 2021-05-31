@@ -9,6 +9,8 @@
 //but less overhead for setting up / finishing transfers. Make sure 240 is dividable by this.
 #define PARALLEL_LINES 16
 
+#define SPI_FREQ (1 *1 *1000)
+
 typedef struct {
     int16_t csPin;
     spi_device_handle_t device;
@@ -22,12 +24,12 @@ static uint8_t mf_spi_setup_device(mf_spi_device_internal_t* dev){
 
     //Configure the specific device
     spi_device_interface_config_t devcfg = {
-        .clock_speed_hz = (16 * 1000 * 1000) / 128, //Clock out at 16/ 128 MHz
+        .clock_speed_hz = SPI_FREQ,//(16 * 1000 * 1000) / 128, //Clock out at 16/ 128 MHz
         .mode = 0,                                  //SPI mode 0
         .flags = SPI_DEVICE_HALFDUPLEX,
         .spics_io_num = -1,                         //CS pin
         .queue_size = 7,                            //We want to be able to queue 7 transactions at a time
-                                                    // .pre_cb = lcd_spi_pre_transfer_callback, //Specify pre-transfer callback to handle D/C line
+                                                    // .pre_cb = lcd_spi_pre_transfer_callback, //Specify pre-transfer callback to handle D/C line        
         .command_bits= 8
     };
 
@@ -88,6 +90,26 @@ static int mf_spi_index_from_device(mf_spi_device_t dev){
     return dev;
 }
 
+static uint8_t mf_spi_send_message_internal(mf_spi_device_internal_t dev, uint8_t cmd, uint8_t *message, size_t length){
+    spi_transaction_t t;
+    memset(&t, 0, sizeof(t));
+    t.length = length;
+    t.cmd = cmd;
+    t.tx_buffer = message;
+    esp_err_t ret = spi_device_polling_transmit(dev.device, &t);
+    return ret == ESP_OK ? 0 : 1;
+}
+
+static uint8_t mf_spi_receive_message_internal(mf_spi_device_internal_t dev,void* receive_buffer, size_t length){
+    spi_transaction_t t;
+    memset(&t, 0, sizeof(t)); //TODO: Do we need to free?
+    t.rxlength = length;
+    t.rx_buffer = receive_buffer;
+    esp_err_t ret = spi_device_polling_transmit(dev.device, &t);
+    return ret == ESP_OK ? 0 : 1;
+}
+
+
 uint8_t mf_spi_send_message(mf_spi_device_t device, uint8_t cmd, uint8_t *message, size_t length)
 {
     int devIndex = mf_spi_index_from_device(device);
@@ -97,16 +119,9 @@ uint8_t mf_spi_send_message(mf_spi_device_t device, uint8_t cmd, uint8_t *messag
     
     // Enable SPI CS
     gpio_set_level(dev.csPin, 0);
-
-    spi_transaction_t t;
-    memset(&t, 0, sizeof(t));
-    t.length = length;
-    t.cmd = cmd;
-    t.tx_buffer = message;
-    esp_err_t ret = spi_device_polling_transmit(dev.device, &t);
-
+    uint8_t ret = mf_spi_send_message_internal(dev, cmd, message,length);
     gpio_set_level(dev.csPin, 1);
-    return ret == ESP_OK ? 0 : 1;
+    return ret;
 }
 
 uint8_t mf_spi_receive_message(mf_spi_device_t device,void* receive_buffer, size_t length){
@@ -116,13 +131,33 @@ uint8_t mf_spi_receive_message(mf_spi_device_t device,void* receive_buffer, size
     mf_spi_device_internal_t dev = spi_devices[devIndex];
     
     gpio_set_level(dev.csPin, 0);
+    uint8_t ret = mf_spi_receive_message_internal(dev, receive_buffer, length);
+    gpio_set_level(dev.csPin, 1);
+    return ret;
+}
 
-    spi_transaction_t t;
-    memset(&t, 0, sizeof(t));
-    t.rxlength = length;
+uint8_t mf_spi_send_and_receive_message(mf_spi_device_t device,uint8_t cmd, uint8_t *message, size_t message_size, void* receive_buffer, size_t receive_size){
+     int devIndex = mf_spi_index_from_device(device);
+    if(devIndex == MF_SPI_INVALID_DEVICE)
+        return 1;
+    mf_spi_device_internal_t dev = spi_devices[devIndex];
+    
+    gpio_set_level(dev.csPin, 0);
+ spi_transaction_t t;
+   memset(&t, 0, sizeof(t)); //TODO: Do we need to free?
+    t.length = message_size;
+    t.cmd = cmd;
+    t.tx_buffer = message;
+    t.rxlength = receive_size;
     t.rx_buffer = receive_buffer;
-    esp_err_t ret = spi_device_polling_transmit(dev.device, &t);
+    esp_err_t ret = spi_device_polling_transmit(dev.device, &t);/*
+     uint8_t ret = mf_spi_send_message_internal(dev, cmd, message, message_size);
+    if(ret == 0)
+        ret = mf_spi_receive_message_internal(dev, receive_buffer, receive_size); 
+    */
     gpio_set_level(dev.csPin, 1);
 
-    return ret == ESP_OK ? 0 : 1;
+    return ret;
 }
+
+ 

@@ -3,12 +3,12 @@ cmake_minimum_required(VERSION 3.5)
 
 list(APPEND EXTRA_COMPONENT_DIRS "/home/david/iot-lite/iotivity-lite/port/esp32/builder")
 
-set(PROJECT_VER "0.0.0.0")
+set(PROJECT_VER "0.0.1.0")
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
 # Compile definitions must be set before the project command in order to make them available throughout the whole project
-add_definitions(-DMF_NUM_COMPONENTS=3)
+add_definitions(-DMF_NUM_COMPONENTS=2)
 add_definitions(-DOC_CLOUD -DOC_CLIENT -DOC_SOFTWARE_UPDATE -DOC_SECURITY -DOC_SERVER -DOC_DYNAMIC_ALLOCATION -DOC_TCP -DOC_IPV4) #TODO: Find a way of deducing this like in the main CMake (from the kconfig)
 
 

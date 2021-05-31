@@ -14,7 +14,7 @@ typedef int mf_spi_device_t;
 /**
  * @brief: Sets up spi with all the devices
  * 
- * @param: enablePins: Must be of length MF_SPI_MAX_DEVICES
+ * @param: enablePins: Specify the CS pin number. Must be of length MF_SPI_MAX_DEVICES
  */ 
 uint8_t mf_spi_init(uint8_t * enablePins);
 /**
@@ -26,5 +26,6 @@ mf_spi_device_t mf_spi_device_from_index(uint8_t index);
 
 uint8_t mf_spi_send_message(mf_spi_device_t device, uint8_t cmd, uint8_t* message, size_t length);
 uint8_t mf_spi_receive_message(mf_spi_device_t device, void* receive_buffer, size_t length);
+uint8_t mf_spi_send_and_receive_message(mf_spi_device_t device,uint8_t cmd, uint8_t *message, size_t message_size, void* receive_buffer, size_t receive_size);
 
 #endif
