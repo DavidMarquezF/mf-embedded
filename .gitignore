@@ -5,3 +5,4 @@ sdkconfig
 apps/mf_firmware_service/mf_firmware_api/test.txt
 apps/go_soft_client/go.sum
 apps/go_soft_server/go.sum
+apps/attiny85/*.o
