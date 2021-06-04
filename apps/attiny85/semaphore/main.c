@@ -24,37 +24,6 @@ static volatile uint8_t reg_position;
 static const uint8_t reg_size = sizeof(i2c_regs);
 
 
-
-
-
-#include <util/delay.h>
-static void printByte(uint8_t byte){
-    PORTB |= 1 << PB3;
-    _delay_ms(500);
-    PORTB &= ~(1<<PB3);
-    _delay_ms(500);
-    PORTB |= 1 << PB3;
-    _delay_ms(500);
-    PORTB &= ~(1<<PB3);
-    for (int i = 7; i >=0; i--)
-    {
-        PORTB ^= 1 << PB4;
-        if((byte >> i) & 1)
-            PORTB |= 1 << PB3;
-        else
-            PORTB &= ~(1<<PB3);
-
-        _delay_ms(1000);
-    }
-    PORTB |= 1 << PB3;
-    _delay_ms(500);
-    PORTB &= ~(1<<PB3);
-    _delay_ms(500);
-    PORTB |= 1 << PB3;
-    _delay_ms(500);
-    PORTB &= ~(1<<PB3 | 1<<PB4);
-}
-
 /**
  * This function is executed when there is a request to read sensor
  * To get data, 2 reads of 8 bits are required

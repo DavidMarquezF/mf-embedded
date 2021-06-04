@@ -7,3 +7,4 @@ apps/go_soft_client/go.sum
 apps/go_soft_server/go.sum
 apps/attiny85/**/*.o
 apps/attiny85/semaphore/main
+apps/attiny85/mflib/libmf.a
