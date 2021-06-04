@@ -47,8 +47,6 @@ static uint8_t mf_i2c_send_internal(mf_i2c_device_t device, uint8_t* message, si
 
     ret = i2c_master_cmd_begin(I2C_MASTER_NUM, cmd, 1000 / portTICK_RATE_MS);
     i2c_cmd_link_delete(cmd);
-    #include "mf_log.h"
-    PRINT("ERROR: %d", ret);
     return ret == ESP_OK ? 0 : 1;
 }
 
