@@ -1,9 +1,14 @@
 CC=avr-gcc
-CFLAGS = --std=c99 -Os -Wall -mmcu=attiny85 \
-	-fshort-enums -DF_CPU=1000000
+CFLAGS = --std=c99 -Os -Wall -mmcu=attiny85 -fshort-enums \
+	 -DF_CPU=1000000 -I../
 LDFLAGS = -Os -mmcu=attiny85 -Wall
 
-.PHONY: build clean
+vpath lib% ../mflib
+
+.PHONY: build-% clean veryclean
+
+mflib:
+	$(MAKE) -C ../mflib
 
 %.hex: %
 	avr-objcopy -Oihex $< $@
@@ -13,8 +18,11 @@ build-%: %.hex
 
 clean: 
 	\rm -f *.o *.hex *~
+	$(MAKE) -C ../mflib clean
 
-main: main.o usi_twi_slave.o
+veryclean: clean
+	\rm -f main
+	$(MAKE) -C ../mflib veryclean
 
-main.o: usi_twi_slave.h
-usi_twi_slave.o: usi_twi_slave.h
+main: main.o -lmf
+

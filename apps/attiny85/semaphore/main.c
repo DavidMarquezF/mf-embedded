@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include "usi_twi_slave.h"
+#include <mflib/usi_twi_slave.h>
 
 /*
  * Set I2C Slave address. You can have multiple sensors with different addresses
@@ -65,8 +65,8 @@ static void printByte(uint8_t byte){
 static void request_event(void)
 {  
 
-  usi_twi_transmit_byte(i2c_regs[reg_position]);
-
+  usi_twi_transmit_byte(0);//i2c_regs[reg_position]);
+PORTB ^= 1<<LED1;
   reg_position++;
   if (reg_position >= reg_size)
       reg_position = 0;
