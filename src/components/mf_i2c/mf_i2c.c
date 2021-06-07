@@ -75,6 +75,6 @@ uint8_t mf_i2c_send_and_receive_message(mf_i2c_device_t device, uint8_t *message
     int ret = mf_i2c_send_internal(device, message, message_size);
     if(ret != 0)
         return ret;
-    vTaskDelay(30 / portTICK_RATE_MS);
+    //vTaskDelay(1000 / portTICK_RATE_MS);
     return mf_i2c_receive_internal(device, receive_buffer, receive_size);
 }

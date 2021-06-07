@@ -11,4 +11,5 @@ typedef uint8_t mf_device_t;
 #define MF_DEVICE_ID_ULTRASOUND 1
 #define MF_DEVICE_ID_TEMP 2
 #define MF_DEVICE_ID_SEMAPHORE 3
+#define MF_DEVICE_ID_BUTTON 4
 #endif
