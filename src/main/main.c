@@ -71,10 +71,7 @@
 #include "oc_pki.h"
 #endif
 
-#include "mf_spi.h"
-#include "mf_spi_device.h"
 #include "mf_main.h"
-#include "mf_updates_handler.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
@@ -426,16 +423,11 @@ static void loop(void)
 static void init(void)
 {
   PRINT("MAIN INIT...\n");
-
-  mf_updates_handler_init_check_if_updated();
-
-  uint8_t spi_enable_pins[MF_SPI_MAX_DEVICES] = {5}; 
-  assert(mf_spi_init(spi_enable_pins) == 0);
-  assert(mf_spi_device_discover_devices()==0);
-
+  mf_main_init();
   tcpip_adapter_ip_info_t ip4_info = {0};
   struct ip6_addr if_ipaddr_ip6 = {0};
   ESP_LOGI(TAG, "iotivity server task started");
+  return;
   // wait to fetch IPv4 && ipv6 address
 #ifdef OC_IPV4
   xEventGroupWaitBits(wifi_event_group, IPV4_CONNECTED_BIT | IPV6_CONNECTED_BIT, false, true, portMAX_DELAY);
@@ -499,7 +491,6 @@ server_main(void *pvParameter)
   // This is a known issue , where max_app_data_size has to be between 6 and 8 Kb to work
   oc_set_max_app_data_size(7168);
 
-  mf_updates_handler_init();
 
   /* start the stack */
   init = oc_main_init(&handler);

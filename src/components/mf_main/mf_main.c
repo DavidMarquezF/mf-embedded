@@ -4,6 +4,14 @@
 #include "mf_component_handler.h"
 #include "mf_discovery.h"
 #include "mf_updates_handler.h"
+#include "mf_power.h"
+#include "mf_i2c_interrupt.h"
+#include "mf_spi.h"
+#include "mf_i2c.h"
+#include "mf_spi_device.h"
+#include "mf_i2c_device.h"
+
+
 
 
 /**
@@ -40,6 +48,7 @@ void mf_main_register_resources(void)
 
 
 uint8_t mf_main_init_components(void){
+    mf_power_init();
     return mf_component_handler_init_components();
 }
 uint8_t mf_main_destroy_components(void){
@@ -48,4 +57,27 @@ uint8_t mf_main_destroy_components(void){
 
 void mf_main_cloud_login(void){
     mf_updates_handler_cloud_login();
+}
+
+
+uint8_t mf_main_init(void){
+      mf_updates_handler_init();
+
+    mf_updates_handler_init_check_if_updated();
+    assert(mf_power_init() == 0);
+    mf_power_enable_modules(true);
+    //TODO: Put delay, so compoents have time to turn on
+
+  uint8_t spi_enable_pins[MF_SPI_MAX_DEVICES] = {5}; 
+  assert(mf_spi_init(spi_enable_pins) == 0);
+  assert(mf_i2c_init() == 0);
+  assert(mf_spi_device_discover_devices()==0);
+  assert(mf_i2c_device_discover_devices()==0);
+  uint8_t i2c_pins[] = {
+    25
+  };
+  assert(mf_i2c_interrupt_init(i2c_pins, 1)==0);
+
+  return 0;
+  
 }
