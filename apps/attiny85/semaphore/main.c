@@ -12,7 +12,7 @@
 
 #define LED1 PB4
 #define LED2 PB3
-#define INTR PB1
+#define LED3 PB1
 
 
 static volatile uint8_t i2c_regs[] =
@@ -35,7 +35,6 @@ static void request_event(void)
 {  
 
   usi_twi_transmit_byte(0);//i2c_regs[reg_position]);
-PORTB ^= 1<<LED1;
   reg_position++;
   if (reg_position >= reg_size)
       reg_position = 0;
@@ -46,14 +45,17 @@ static void receive_event(uint8_t data_length){
     return;
     uint8_t val = usi_twi_receive_byte();
     i2c_regs[0] = val;
-  bool led1 = val >> 4 & 1;
-  bool led2 = val & 1;
+    bool led1 = (val >> 0) & 1;
+    bool led2 = (val >> 1) & 1;
+    bool led3 = (val >> 2) & 1;
 
   
  
   //printByte(cmd);
   PORTB = led1 ? (PORTB | (1<<LED1)) : (PORTB & ~(1<<LED1));
   PORTB = led2 ? (PORTB | (1<<LED2)) : (PORTB & ~(1<<LED2));
+  PORTB = led3 ? (PORTB | (1<<LED3)) : (PORTB & ~(1<<LED3));
+  
   //PORTB |= 1<<LED1;
 }
 
@@ -74,7 +76,7 @@ void main(void) {
   usi_twi_set_receive_callback(receive_event);
   
   sei();
-  DDRB |= (1 << LED1) | (1<<LED2);
+  DDRB |= (1 << LED1) | (1<<LED2) | (1<<LED3);
   while(1)
       loop();
   
