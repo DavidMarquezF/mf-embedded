@@ -6,7 +6,7 @@
 #include "mf_i2c.h"
 
 #ifndef MF_I2C_MAX_DEVICES
-#define MF_I2C_MAX_DEVICES 1
+#define MF_I2C_MAX_DEVICES 3
 #endif
 uint8_t mf_i2c_device_discover_devices(void);
 uint8_t mf_i2c_device_get_value(mf_device_t dev, void * out_result, size_t size);

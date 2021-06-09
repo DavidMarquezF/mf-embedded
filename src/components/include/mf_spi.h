@@ -5,7 +5,7 @@
 #include "mf_device.h"
 
 #ifndef MF_SPI_MAX_DEVICES
-#define MF_SPI_MAX_DEVICES 1
+#define MF_SPI_MAX_DEVICES 3
 #endif
 
 typedef int mf_spi_device_t;

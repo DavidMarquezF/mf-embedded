@@ -12,6 +12,9 @@
 #include "mf_i2c_device.h"
 
 
+void test(){
+  PRINT("TES!!!!!!T");
+}
 
 
 /**
@@ -49,7 +52,18 @@ void mf_main_register_resources(void)
 
 uint8_t mf_main_init_components(void){
     mf_power_init();
-    return mf_component_handler_init_components();
+     mf_component_handler_init_components();
+      #include "mf_hw_temp.h"
+      float val;
+    mf_hw_temp_get_value(&val);
+
+    #include "mf_hw_button.h"
+    mf_hw_button_init(test);
+    PRINT("CURRENT TEMPERATURE: %f", val);
+    #include "mf_hw_semaphore.h"
+    mf_hw_semaphore_init();
+    mf_hw_semaphore_set_value(false, true,true);
+
 }
 uint8_t mf_main_destroy_components(void){
     return mf_component_handler_destroy_components();
@@ -68,13 +82,13 @@ uint8_t mf_main_init(void){
     mf_power_enable_modules(true);
     //TODO: Put delay, so compoents have time to turn on
 
-  uint8_t spi_enable_pins[MF_SPI_MAX_DEVICES] = {5}; 
+  uint8_t spi_enable_pins[MF_SPI_MAX_DEVICES] = {18, 16, 15};  
   assert(mf_spi_init(spi_enable_pins) == 0);
   assert(mf_i2c_init() == 0);
   assert(mf_spi_device_discover_devices()==0);
   assert(mf_i2c_device_discover_devices()==0);
-  uint8_t i2c_pins[] = {
-    25
+  uint8_t i2c_pins[MF_I2C_MAX_DEVICES] = {
+    32,33,25
   };
   assert(mf_i2c_interrupt_init(i2c_pins, 1)==0);
 
