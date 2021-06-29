@@ -58,11 +58,12 @@ uint8_t mf_main_init_components(void){
     mf_hw_temp_get_value(&val);
 
     #include "mf_hw_button.h"
-    mf_hw_button_init(test);
+    PRINT("Button %d",mf_hw_button_init(test));
     PRINT("CURRENT TEMPERATURE: %f", val);
     #include "mf_hw_semaphore.h"
     mf_hw_semaphore_init();
     mf_hw_semaphore_set_value(false, true,true);
+    return 0;
 
 }
 uint8_t mf_main_destroy_components(void){
@@ -90,7 +91,7 @@ uint8_t mf_main_init(void){
   uint8_t i2c_pins[MF_I2C_MAX_DEVICES] = {
     32,33,25
   };
-  assert(mf_i2c_interrupt_init(i2c_pins, 1)==0);
+  assert(mf_i2c_interrupt_init(i2c_pins, MF_I2C_MAX_DEVICES)==0);
 
   return 0;
   
