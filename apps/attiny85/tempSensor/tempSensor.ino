@@ -66,6 +66,17 @@ void printNumber(uint8_t number)
   }
 }
 
+static void chipSelected(bool sel){
+  if(sel){
+  DDRB |= (1 << MISO);    
+  DDRB &= ~(1 << MOSI);  
+  }
+  else{
+    DDRB |= (1 << MOSI);    
+  DDRB &= ~(1 << MISO);
+  }
+  
+}
 double temp;
 void setup(void)
 {
@@ -76,12 +87,12 @@ void setup(void)
   //MOSI:  PB0 input
   //MISO: PB1 output
   //SCK:  PB2 input
-  DDRB |= (1 << LED) | (1 << MISO);    //0000 0010
-  DDRB &= ~((1 << MOSI) | (1 << SCK)); //0000 0101
-
+  
+  DDRB &= ~((1 << SCK)); //0000 0101
+chipSelected(false);
   USICR = (1 << USIWM0) | (1 << USICS1); // Three wire mode with extenral clock
 
-  PORTB &= ~(0 << LED); // Turn PB1 off
+ // PORTB &= ~(0 << LED); // Turn PB1 off
 
   PCMSK |= 1 << CS;   // Active Interrupt on PB1
   GIMSK |= 1 << PCIE; // General Interrupt Mask Register / PCIE bit activates external interrupts
@@ -96,6 +107,7 @@ ISR(PCINT0_vect)
   {
     if (!isDown)
     {
+      chipSelected(true);
       isDown = true;
       // If edge is falling, the command and index variables shall be initialized
       // and the 4-bit overflow counter of the USI communication shall be activated:
@@ -104,8 +116,9 @@ ISR(PCINT0_vect)
       USISR = 1 << USIOIF; // Clear Overflow bit
     }
   }
-  else if (isDown)
+  else 
   {
+    chipSelected(false);
     isDown = false;
     // If edge is rising, turn the 4-bit overflow interrupt off:
     USICR &= ~(1 << USIOIE);
