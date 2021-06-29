@@ -5,6 +5,7 @@
 #include "driver/gpio.h"
 #include "esp_err.h"
 #include "mf_log.h"
+
 //To speed up transfers, every SPI transfer sends a bunch of lines. This define specifies how many. More means more memory use,
 //but less overhead for setting up / finishing transfers. Make sure 240 is dividable by this.
 #define PARALLEL_LINES 16
@@ -47,6 +48,8 @@ static uint8_t mf_spi_setup_device(mf_spi_device_internal_t* dev){
     io_conf.pull_down_en = 0;
     // Disable pull up mode
     io_conf.pull_up_en = 0;
+    gpio_set_level(dev->csPin, 1);
+
     if(gpio_config(&io_conf) != ESP_OK)
         return 1;
 
@@ -59,11 +62,16 @@ uint8_t mf_spi_init(uint8_t * enablePins)
         
     esp_err_t ret;
 
+    // We use arbitrary pins for the miso, mosi and sclk
+    // However, esp32 has some specific pins that work better: HSPI and VSPI
+    // If the pins assigned to these are not used, the driver uses the GPIO matrix, 
+    // which is slower. If the correct ones were used, it would bypass the GPIO matrix
+    // Doing this caps the maximum velocity to 40MHz (not a problem for us), while it could be up to 80MHz
     // Configure the bus
     spi_bus_config_t busconfig = {
-        .miso_io_num = VSPI_IOMUX_PIN_NUM_MISO,
-        .mosi_io_num = VSPI_IOMUX_PIN_NUM_MOSI,
-        .sclk_io_num = VSPI_IOMUX_PIN_NUM_CLK,
+        .miso_io_num = 22,
+        .mosi_io_num = 23,
+        .sclk_io_num = 21,
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
         .max_transfer_sz = PARALLEL_LINES * 320 * 2 + 8};
@@ -143,6 +151,7 @@ uint8_t mf_spi_send_and_receive_message(mf_spi_device_t device,uint8_t cmd, uint
     mf_spi_device_internal_t dev = spi_devices[devIndex];
     
     gpio_set_level(dev.csPin, 0);
+
  spi_transaction_t t;
    memset(&t, 0, sizeof(t)); //TODO: Do we need to free?
     t.length = message_size;

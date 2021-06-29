@@ -10,6 +10,7 @@
 #include "mf_i2c.h"
 #include "mf_spi_device.h"
 #include "mf_i2c_device.h"
+#include "mf_delay.h"
 
 
 void test(){
@@ -81,8 +82,7 @@ uint8_t mf_main_init(void){
     mf_updates_handler_init_check_if_updated();
     assert(mf_power_init() == 0);
     mf_power_enable_modules(true);
-    //TODO: Put delay, so compoents have time to turn on
-
+  mf_delay_ms(1000);
   uint8_t spi_enable_pins[MF_SPI_MAX_DEVICES] = {18, 16, 15};  
   assert(mf_spi_init(spi_enable_pins) == 0);
   assert(mf_i2c_init() == 0);
