@@ -303,7 +303,7 @@ PRINT("\nFactory presets...\n");
                    "KrtyPSIGAk0OAO8txhow1BAGV486AiEAqszg1fTfOHdE/pfs8/9ZP5gEVVkexRHZ\r\n"
                    "JCYVaa2Spbg=\r\n"
                    "-----END CERTIFICATE-----\r\n";*/
-                   char *cloud_ca = "-----BEGIN CERTIFICATE-----\nMIIBZDCCAQqgAwIBAgIQMAmbP7Ky440gqmQ5zd2WxjAKBggqhkjOPQQDAjASMRAw\nDgYDVQQDEwdSb290IENBMB4XDTIxMDUxMjA4MDkzN1oXDTIyMDUxMjA4MDkzN1ow\nEjEQMA4GA1UEAxMHUm9vdCBDQTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABCfs\nqHqRU847vWwF7mjte4WpFXbsijfnwNqowuMZA2Ukmj2eectwdZvPXhg5mjMGqe3f\n6PWEPAfuB0LE+AhU7HKjQjBAMA4GA1UdDwEB/wQEAwIBBjAPBgNVHRMBAf8EBTAD\nAQH/MB0GA1UdDgQWBBTV3osb9E4vH37YbHconjG1i6EIzzAKBggqhkjOPQQDAgNI\nADBFAiEAwk45qwEzi+V0528CEo45YX2zZ5XpT1Y0OIQMV7A30k8CICArsq/4G2jl\nrxHg3fOo4Zc6HvVi3nv+m+hjufWzh9Ih\n-----END CERTIFICATE-----\n";
+                   char *cloud_ca = "-----BEGIN CERTIFICATE-----\nMIIBZTCCAQugAwIBAgIRAIxaSUoAuHFon25RMhOFPvkwCgYIKoZIzj0EAwIwEjEQ\nMA4GA1UEAxMHUm9vdCBDQTAeFw0yMTA3MDQxMDA1MzBaFw0yMjA3MDQxMDA1MzBa\nMBIxEDAOBgNVBAMTB1Jvb3QgQ0EwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAARP\nzYldo46Aswl3K3cK3opAWjzYE7RiwnyxPuJrpsHyNBH9chJ3bY0hHFfAt+uKRV+P\nXRhJKN9JR4JN6/9HRpYco0IwQDAOBgNVHQ8BAf8EBAMCAQYwDwYDVR0TAQH/BAUw\nAwEB/zAdBgNVHQ4EFgQUh3VHEPMzk635FcqAV+QFmjGAmQcwCgYIKoZIzj0EAwID\nSAAwRQIhALr70S4e3H9Bic7yiXgetKuUXqEkS2JqIW3vVQ6/4eCpAiAsECTlOaRe\nYSElXz+rdYHqIefk7Ujk0UQET1An2ngqHQ==\n-----END CERTIFICATE-----\n";
   int rootca_credid =
       oc_pki_add_trust_anchor(0, (const unsigned char *)cloud_ca, strlen(cloud_ca));
   if (rootca_credid < 0)
@@ -427,7 +427,6 @@ static void init(void)
   tcpip_adapter_ip_info_t ip4_info = {0};
   struct ip6_addr if_ipaddr_ip6 = {0};
   ESP_LOGI(TAG, "iotivity server task started");
-  return;
   // wait to fetch IPv4 && ipv6 address
 #ifdef OC_IPV4
   xEventGroupWaitBits(wifi_event_group, IPV4_CONNECTED_BIT | IPV6_CONNECTED_BIT, false, true, portMAX_DELAY);

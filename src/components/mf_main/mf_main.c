@@ -61,9 +61,7 @@ uint8_t mf_main_init_components(void){
     #include "mf_hw_button.h"
     PRINT("Button %d",mf_hw_button_init(test));
     PRINT("CURRENT TEMPERATURE: %f", val);
-    #include "mf_hw_semaphore.h"
-    mf_hw_semaphore_init();
-    mf_hw_semaphore_set_value(false, true,true);
+    
     return 0;
 
 }
