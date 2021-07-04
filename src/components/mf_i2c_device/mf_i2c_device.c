@@ -1,7 +1,8 @@
 #include "mf_i2c_device.h"
 #include "mf_log.h"
 
-mf_device_t devices[MF_I2C_MAX_DEVICES];
+static mf_device_t devices[MF_I2C_MAX_DEVICES];
+
 uint8_t mf_i2c_device_discover_devices(void){
     PRINT("\nDiscovering I2C devices...\n");
     uint8_t index=0;
@@ -33,3 +34,7 @@ mf_i2c_device_t mf_i2c_device_get_device(mf_device_t dev){
     }
     return MF_I2C_INVALID_DEVICE;
 }   
+
+mf_device_t mf_i2c_device_get_device_from_index(uint8_t index){
+    return devices[index];
+}

@@ -12,4 +12,5 @@ uint8_t mf_i2c_device_discover_devices(void);
 uint8_t mf_i2c_device_get_value(mf_device_t dev, void * out_result, size_t size);
 uint8_t mf_i2c_device_set_value(mf_device_t dev, void * value, size_t size);
 mf_i2c_device_t mf_i2c_device_get_device(mf_device_t dev);
+mf_device_t mf_i2c_device_get_device_from_index(uint8_t index);
 #endif
