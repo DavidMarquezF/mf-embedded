@@ -4,6 +4,7 @@
 #include "../mf_component_handler.h"
 #include "../mf_temp.h"
 #include "../mf_semaphore.h"
+#include "../mf_button.h"
 
 // MF_NUM_COMPONENTS has to be set when compiling in order to optimize memory usage. The number of components will be known prior to compilation
 
@@ -14,6 +15,13 @@
                                      .create_resource_callback = mf_temp_create_resource,
                                      .init_callback = mf_temp_init,
                                      .destroy_callback = mf_temp_destroy
+                                     },
+                                     {
+                                        .name = "Button Switch",
+                                        .url="/btn",
+                                        .create_resource_callback = mf_button_create_resource,
+                                        .init_callback = mf_button_init,
+                                        .destroy_callback = mf_button_destroy
                                      },
                                      {
                                          .name = "Semaphore",

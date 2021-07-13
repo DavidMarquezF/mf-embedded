@@ -1,5 +1,5 @@
-#ifndef _MF_BUTTON_H_
-#define _MF_BUTTON_H_
+#ifndef _MF_BUTTON_HW_H_
+#define _MF_BUTTON_HW_H_
 #include <stdint.h>
 #include "mf_helpers.h"
 
