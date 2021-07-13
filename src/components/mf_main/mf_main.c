@@ -13,10 +13,6 @@
 #include "mf_delay.h"
 
 
-void test(){
-  PRINT("TES!!!!!!T");
-}
-
 
 /**
 * register all the resources to the stack
@@ -53,15 +49,8 @@ void mf_main_register_resources(void)
 
 uint8_t mf_main_init_components(void){
     mf_power_init();
-     mf_component_handler_init_components();
-      #include "mf_hw_temp.h"
-      float val;
-    mf_hw_temp_get_value(&val);
-
-    #include "mf_hw_button.h"
-    PRINT("Button %d",mf_hw_button_init(test));
-    PRINT("CURRENT TEMPERATURE: %f", val);
-    
+    mf_component_handler_init_components();
+ 
     return 0;
 
 }
@@ -90,7 +79,6 @@ uint8_t mf_main_init(void){
     32,33,25
   };
   assert(mf_i2c_interrupt_init(i2c_pins, MF_I2C_MAX_DEVICES)==0);
-
   return 0;
   
 }
