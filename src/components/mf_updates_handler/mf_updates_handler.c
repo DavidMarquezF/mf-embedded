@@ -6,6 +6,8 @@
 #include "oc_client_state.h"
 #include "oc_blockwise.h"
 #include "oc_api.h"
+#include "security/oc_tls.h"
+
 
 #include "esp_flash_partitions.h"
 #include "esp_partition.h"
@@ -15,7 +17,7 @@
 #include "esp_log.h"
 #include "esp_system.h"
 
-static const char *TAG = "native_ota_example";
+static const char *TAG = "mf_updates_handler";
 static int binary_file_length;
 /*deal with all receive packet*/
 static bool image_header_was_checked;
@@ -342,6 +344,12 @@ static int download_update(size_t device, const char *url)
     oc_string_t uri_string;
     oc_string_to_endpoint(&enpoint_string, endpoint, &uri_string);
     oc_free_string(&enpoint_string);
+
+    #ifdef OC_SECURITY
+    if (!oc_tls_connected(endpoint)) {
+        oc_tls_select_cloud_ciphersuite();
+    }
+    #endif 
 
     oc_client_handler_t client_handler;
     client_handler.response = finish_download_handler;
