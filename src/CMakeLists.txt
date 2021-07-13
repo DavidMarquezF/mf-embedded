@@ -3,7 +3,11 @@ cmake_minimum_required(VERSION 3.5)
 
 list(APPEND EXTRA_COMPONENT_DIRS $ENV{IOTIVITY_PATH}/port/esp32/builder)
 
-set(PROJECT_VER "0.0.1.0")
+if(NOT DEFINED MF_PROJECT_VERSION)
+    set(PROJECT_VER "0.0.1.0")
+else()
+    set(PROJECT_VER ${MF_PROJECT_VERSION})
+endif()
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
@@ -11,6 +15,7 @@ if (NOT DEFINED MF_NUMBER_COMPONENTS)
     set(MF_NUMBER_COMPONENTS 3)
 endif()
 
+message(STATUS "Poject version: ${PROJECT_VER}" )
 message(STATUS "Number of components: ${MF_NUMBER_COMPONENTS}" )
 # Compile definitions must be set before the project command in order to make them available throughout the whole project
 add_definitions(-DMF_NUM_COMPONENTS=${MF_NUMBER_COMPONENTS})
