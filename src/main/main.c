@@ -133,7 +133,7 @@ int app_init(void)
   /* the settings determine the appearance of the device on the network
      can be ocf.2.2.0 (or even higher)
      supplied values are for ocf.2.2.0 */
-  ret |= oc_add_device("/oic/d", "oic.d.switchdevice", "SwitchESP",
+  ret |= oc_add_device("/oic/d", "mf.d.base", "MF Device",
                        "ocf.2.2.0",                   /* icv value */
                        "ocf.res.1.3.0, ocf.sh.1.3.0", /* dmv value */
                        NULL, NULL);
@@ -303,7 +303,7 @@ PRINT("\nFactory presets...\n");
                    "KrtyPSIGAk0OAO8txhow1BAGV486AiEAqszg1fTfOHdE/pfs8/9ZP5gEVVkexRHZ\r\n"
                    "JCYVaa2Spbg=\r\n"
                    "-----END CERTIFICATE-----\r\n";*/
-                   char *cloud_ca = "-----BEGIN CERTIFICATE-----\nMIIBZTCCAQugAwIBAgIRAIxaSUoAuHFon25RMhOFPvkwCgYIKoZIzj0EAwIwEjEQ\nMA4GA1UEAxMHUm9vdCBDQTAeFw0yMTA3MDQxMDA1MzBaFw0yMjA3MDQxMDA1MzBa\nMBIxEDAOBgNVBAMTB1Jvb3QgQ0EwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAARP\nzYldo46Aswl3K3cK3opAWjzYE7RiwnyxPuJrpsHyNBH9chJ3bY0hHFfAt+uKRV+P\nXRhJKN9JR4JN6/9HRpYco0IwQDAOBgNVHQ8BAf8EBAMCAQYwDwYDVR0TAQH/BAUw\nAwEB/zAdBgNVHQ4EFgQUh3VHEPMzk635FcqAV+QFmjGAmQcwCgYIKoZIzj0EAwID\nSAAwRQIhALr70S4e3H9Bic7yiXgetKuUXqEkS2JqIW3vVQ6/4eCpAiAsECTlOaRe\nYSElXz+rdYHqIefk7Ujk0UQET1An2ngqHQ==\n-----END CERTIFICATE-----\n";
+                   char *cloud_ca = "-----BEGIN CERTIFICATE-----\nMIIBZTCCAQugAwIBAgIRAJYWx1uP+443mcjzpQDM5wkwCgYIKoZIzj0EAwIwEjEQ\nMA4GA1UEAxMHUm9vdCBDQTAeFw0yMTA3MTIxNjUwNTJaFw0yMjA3MTIxNjUwNTJa\nMBIxEDAOBgNVBAMTB1Jvb3QgQ0EwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAATg\nJkBjFMT+753JkTYE44dEW6MHVmKYQdlrjdEnRUdyYIuBsEmREeFUsvJnBMD5vp6N\na1gIdft12oyaqn2X1b6Po0IwQDAOBgNVHQ8BAf8EBAMCAQYwDwYDVR0TAQH/BAUw\nAwEB/zAdBgNVHQ4EFgQUcSymd4HpYpFglebevOee6Ao/hAUwCgYIKoZIzj0EAwID\nSAAwRQIgL/qX9IQ1+pkZvDwceyCVFQydyjexFvZq4MymCqmjQCgCIQC4dk0kCoas\n3UeokmjRIrxWXwFHdceE2hbXW4x033eOCA==\n-----END CERTIFICATE-----\n";
   int rootca_credid =
       oc_pki_add_trust_anchor(0, (const unsigned char *)cloud_ca, strlen(cloud_ca));
   if (rootca_credid < 0)
@@ -382,6 +382,23 @@ cloud_status_handler(oc_cloud_context_t *ctx, oc_cloud_status_t status,
   if (status & OC_CLOUD_LOGGED_IN)
   {
     PRINT("\t\t-Logged In\n");
+   /*  oc_endpoint_t* endpoint = oc_new_endpoint();
+    oc_string_t enpoint_string;
+    //if(!url){
+     //   char enp_string[] = "coap://192.168.1.120/a";
+      //  oc_new_string(&enpoint_string, enp_string, strlen(enp_string));    
+    //}
+    char * url = "coaps://172.20.1.211:5690/v1/fmw/60eb604986baf687c4ef46c2/exec";
+    oc_new_string(&enpoint_string, url, strlen(url));
+    oc_string_t uri_string;
+    oc_string_to_endpoint(&enpoint_string, endpoint, &uri_string);
+    oc_free_string(&enpoint_string);
+
+oc_do_get(oc_string(uri_string), endpoint, NULL,test,HIGH_QOS, NULL);*/
+
+
+
+
     mf_main_cloud_login();
   }
   if (status & OC_CLOUD_LOGGED_OUT)
